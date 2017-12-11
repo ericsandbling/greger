@@ -11,13 +11,13 @@ import MySQLdb
 
 def sendToGreta(timestamp,temperature):
     
-    tableName = 'temp_test'
+    tableName = 'table_name'
 
     # Open database connection
-    mysql_host = "mysql579.loopia.se"
-    mysql_user = "greger@s182384"
-    mysql_pwd = "tyB776//?"
-    mysql_database = "sandbling_se"
+    mysql_host = "host"
+    mysql_user = "usr"
+    mysql_pwd = "pwd"
+    mysql_database = "db"
     db = MySQLdb.connect(mysql_host,mysql_user,mysql_pwd,mysql_database )
     
     # prepare a cursor object using cursor() method
