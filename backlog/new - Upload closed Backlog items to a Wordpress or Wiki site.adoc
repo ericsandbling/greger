@@ -1,8 +1,0 @@
-= Upload closed Backlog items to a Wordpress or Wiki site
-E. Sandbling
-
-Create an _(automated)_ way of uploading items to an online service, such as a 'Wordpress' or 'Wiki' page/site.
-
-== Change Log
-2017-11-15::
-Item created.
