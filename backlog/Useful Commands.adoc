@@ -4,7 +4,7 @@
 CurlFtpFS::
 Mount Loopia FTP directory
   
-  sudo curlftpfs -o allow_other greger_cloud:Tyujhg456@ftpcluster.loopia.se /mnt/ftp_greta/
+  sudo curlftpfs -o allow_other usr:pwd@ftpcluster.loopia.se /mnt/ftp_greta/
 
 Unmount thesame directory.
 
