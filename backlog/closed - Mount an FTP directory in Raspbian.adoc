@@ -1,0 +1,67 @@
+= Mount an FTP directory in Raspbian
+E. Sandbling
+
+Instruction on how to mount an FTP directory directly in the Pi running on Raspbian.
+
+== Change Log
+2017-11-15::
+Item created.
+
+== Sources
+Mount FTP servers on Linux as folder::
+https://snippets.khromov.se/mount-ftp-servers-on-linux-as-folder/
+
+Mount remote ftp directory host locally into linux filesystem::
+https://linuxconfig.org/mount-remote-ftp-directory-host-locally-into-linux-filesystem
+
+Most suited for the Raspbian Linux version used on the Pi.
+
+== General Notes
+
+=== Installing CulrFtpFS
+Install curlftpfs package.
+
+  sudo apt-get install curlftpfs
+
+=== Mount FTP Directory
+Create a mount point at `/mnt/ftp_greta/`:
+
+  mkdir /mnt/ftp_greta
+
+[NOTE]
+====
+The chosen path is ofcourse optional, however the `/mnt/` directory is usually reserved for mounted directoies, such as USB drives, CD drives etc..
+
+====
+
+Next use `curlftpfs` to mount the FTP directory.
+
+Suppose:
+  
+  username: ftp-user
+  password: ftp-pass
+  host/IP: my-ftp-location.local
+
+Then the actual `curlftpfs` mount command would be:
+
+  curlftpfs -o allow_other ftp-user:ftp-pass@my-ftp-location.local /mnt/ftp_greta/
+
+[NOTE]
+====
+On Debian you can mount ftp using curlftpfs as a root and this allows only root user to access ftp mount.
+No other users are allowed since by default only users that mounts has and access to mount directory. When mounting ftp as a non-root user you may get a following error message:
+
+  fuse: failed to open /dev/fuse: Permission denied
+
+Rather that changing permissions of `/dev/fuse` you can allow other users to access ftp mount directory with an curlftpfs's option `allow_other`. The command will look similar to the one below:
+
+  curlftpfs -o allow_other ftp-user:ftp-pass@my-ftp-location.local /mnt/my_ftp/
+
+====
+
+CAUTION: FTP uses unencrypted passwords so anyone can intercept your password without much effort. Therefore use `curlftpfs` in combination with SSL certificates if your are not mounting some local LAN ftp server.
+
+=== Unmounting FTP directory
+Unmount the FTP directory `/mnt/ftp_greta/`:
+
+  fusermount -u /mnt/ftp_greta

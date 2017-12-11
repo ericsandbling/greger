@@ -1,0 +1,18 @@
+= Managing Projects with GitHub
+E. Sandbling
+
+Attempt to ensure versioning and control over development projects by using http://github.com/[GitHub].
+
+== Change Log
+2017-12-11::
+Item created.
+
+
+== Goals
+* [ ]
+
+== General notes
+Source: https://www.lullabot.com/articles/managing-projects-with-github
+
+Source: https://projects.raspberrypi.org/en/projects/getting-started-with-git
+Raspberry tutorial to get started using Git.

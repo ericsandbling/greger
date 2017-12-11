@@ -1,0 +1,9 @@
+= Create Event Frames to Capture Good Logs at Exception
+E. Sandbling
+
+Create a system for dokumenting events in a log, that is only dumped to log file at an exception.
+During normal operation the log only contains the brae minimum of information.
+
+== Change Log
+2017-11-16::
+Item created.

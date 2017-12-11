@@ -1,0 +1,28 @@
+= Use AsciiDoc to manage text on GitHub
+E. Sandbling, 2017-12-11
+
+ifdef::env-github[]
+:imagesdir: foo/
+endif::[]
+
+:toc:
+:toc-placement!:
+
+Use AsciiDoc instead of Markdown (Git flavoured) as a coding for text posted to GitHub.
+
+toc::[]
+
+== Change Log
+2017-12-11::
+Item created.
+
+== Goals
+
+== General Notes
+Source: https://github.com/asciidoctor/asciidoctor.org/blob/master/docs/_includes/asciidoc-vs-markdown.adoc
+
+General notivation for using http://asciidoc.org[AsciiDoc].
+
+Source: https://gist.github.com/dcode/0cfbf2699a1fe9b46ff04c41721dda74
+
+GitHub Flavored AsciiDoc (GFA).
