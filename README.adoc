@@ -1,4 +1,9 @@
-= Home Automation an open project
-E.Sandbling
+= Greger is Gregorios
+:author: E.Sandbling
+
+Greger is the _nordic_ version of the name Gregorius, which in turn is the _latin_ form of the name Gregorios.
+
+
+== Home Automation an open project
 
 This is the master project directory with the over-all aim to develop an Home Automation centered around the Raspberry Pi locally and a webserver hosted remotely.
