@@ -1,9 +1,10 @@
-= Greger is Gregorios
+= Greger is Grēgorios
 :author: E.Sandbling
 
-Greger is the _nordic_ version of the name Gregorius, which in turn is the _latin_ form of the name Gregorios.
+Greger is the _nordic_ version of the name Gregorius, which in turn is derived from the _latin_ form of the late Greek name "Γρηγόριος" (Grēgorios) meaning "watchful, alert" (derived from Greek "γρηγoρεῖν" "grēgorein" meaning "to watch").
 
+In english Greger is transformed into Gregory.
 
-== Home Automation an open project
+== About this Git
 
 This is the master project directory with the over-all aim to develop an Home Automation centered around the Raspberry Pi locally and a webserver hosted remotely.
