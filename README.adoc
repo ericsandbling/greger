@@ -1,9 +1,9 @@
 = Greger is Grēgorios
 :author: E.Sandbling
 
-Greger is the _nordic_ version of the name Gregorius, which in turn is derived from the _latin_ form of the late Greek name "Γρηγόριος" (Grēgorios) meaning "watchful, alert" (derived from Greek "γρηγoρεῖν" "grēgorein" meaning "to watch").
+The name *Greger* is the _nordic_ version of the name "Gregorius", which in turn is derived from the _latin_ form of the late Greek name "Γρηγόριος" (Grēgorios) meaning "watchful, alert" (derived from Greek "γρηγoρεῖν" "grēgorein" meaning "to watch").
 
-In english Greger is transformed into Gregory.
+In _english_ *Greger* is transformed into "Gregory".
 
 == About this Git
 
