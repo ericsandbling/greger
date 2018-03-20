@@ -1,3 +1,6 @@
-# Hi
+:toc:
+:toclevels: 5
+
+= Hi
 
 This folder will provide material for documentation...
