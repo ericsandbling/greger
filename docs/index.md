@@ -7,3 +7,7 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 ### Markdown
 
 Markdown is a lightweigth and easy-to-use syntax for styling your writing.
+
+### Page 2
+
+[To page 2...](./page_two.md)
