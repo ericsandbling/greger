@@ -1,0 +1,20 @@
+:toc:
+
+This is the part of the library where knowledge is collected from different sources as needed and discovered throughout this project.
+
+== Other Similar Projects
+https://blog.alexellis.io/environmental-monitoring-dashboard/[Create an Environmental Monitoring Dashboard (blog)]
+
+== General
+https://iot.mozilla.org/wot/[Web Thing API (Mozilla)]
+
+https://45royale.com/blog/wordpress-github/[Using WordPress with GitHub]
+
+== 1-Wire
+
+=== General
+https://www.packtpub.com/books/content/raspberry-pi-and-1-wire[Article by Jack Creasey on remote i/o using RPi & 1-wire]
+
+== Security
+
+https://jonmccune.wordpress.com/2017/07/09/setting-up-ssh-keys-with-the-chrome-os-secure-shell-extension/
