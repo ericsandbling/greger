@@ -7,4 +7,8 @@ In _english_ *Greger* is transformed into "Gregory".
 
 == About this Git
 
-This is the master project directory with the over-all aim to develop an Home Automation centered around the Raspberry Pi locally and a webserver hosted remotely.
+This project dhas the over-all aim to develop an Home Automation centered around the Raspberry Pi locally and a webserver hosted remotely.
+
+=== Documentation
+
+All Documentatio is found in the link:./docs/index.md[Docs] folder.
