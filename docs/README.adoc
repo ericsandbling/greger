@@ -1,6 +1,16 @@
 :toc:
 :toclevels: 5
 
-= Hi
+= Documentation Main Page
 
-This folder will provide material for documentation...
+This folder will provide material for documentation.
+
+== About
+
+As this project is mainly intended and created with personal use of the author _(me)_ in mind, the documentation is intended in line with this as well and will serve as an aid to memory during the development of this project.
+
+=== Exploring the Options
+
+Exploring the options available to create and maintain documentations in an efficient and convienient way I came accross the markup language http://asciidoc.org[AsciiDoc].
+
+Given above the documentation shall fullfill the following critera.
