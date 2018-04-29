@@ -1,0 +1,14 @@
+:toc: right
+
+Concept evaluation and descriptions for the Front-End UI
+
+== Possible Solutions
+
+=== Grafana
+
+TIP: https://grafana.com/
+
+[quote]
+____
+The leading open source software for time series analytics
+____

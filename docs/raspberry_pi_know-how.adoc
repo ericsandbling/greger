@@ -1,0 +1,63 @@
+:sectnums:
+:sectnumlevels: 5
+:toc:
+:toclevels: 5
+
+== Raspberry Pi
+
+=== Guides
+
+==== Run scripts on start-up
+
+In `/etc/init.d/rc.local` add at bottom of file:
+
+ sudo python /home/pi/piTemp_WorkArea/logg2cloud.py > /home/pi/piTemp_WorkArea/logg2cloud1.log 2>&1
+
+Source: https://www.dexterindustries.com/howto/run-a-program-on-your-raspberry-pi-at-startup/
+
+===== Method 3: init.d directory
+
+Add the program to the `/etc/init.d` directory. This directory contains scripts which are started during the boot process (in addition, all programs here are  executed when you shutdown or reboot the system).
+
+Add the program to be run at startup to the `init.d` directory using the following lines:
+
+ sudo cp /home/pi/sample.py /etc/init.d/
+
+Move to the init directory and open the sample script
+
+ cd /etc/init.d
+ sudo nano sample.py
+
+The script needs to be a Linux Standard Base (LSB) (A standard for software system structure, including the file system hierarchy used in the Linux operating system) init script. (Read more on the Debian Wiki)
+
+==== Make Pyton Script Executable
+
+https://www.modmypi.com/blog/how-to-make-python-programs-executable
+
+==== Documentation and publishing
+
+https://pypi.python.org/pypi
+
+https://python-packaging.readthedocs.io/en/latest/minimal.html
+
+==== Process Monitoring
+
+http://cognitivedissonance.ca/cogware/plog/
+
+Get processes with `pgrep`:
+
+ pgrep -lf python
+
+=== Troubleshooting
+
+==== Python script stops executing after a while
+
+Symptom::
+The `python` script stops executing after a while without any discernible crashing of the OS or any other failure.
+
+Solution::
+Source: https://raspberrypi.stackexchange.com/questions/28578/python-script-stops-running-after-about-3-hours
++
+ setsid python animation.py < /dev/zero &> /dev/null &
++
+See `man setsid` -- this ensures the forked process will be re-parented by init. The other stuff is input/output redirection (the output you probably actually want to send to a log instead of `/dev/null`).

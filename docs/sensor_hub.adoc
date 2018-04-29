@@ -1,0 +1,6 @@
+== Hardware
+
+=== Raspberry Pi Zaro W
+i2c: https://www.abelectronics.co.uk/p/76/1-Wire-Pi-Zero[1 wire communication board for the RPi Zero]
+
+Smaller, cheaper... better?

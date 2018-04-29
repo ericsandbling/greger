@@ -1,0 +1,42 @@
+:toc: right
+
+== General
+
+*Relational databases include:* MySQL, MariaDB Server, PostgreSQL. *NoSQL databases include:* Elastic, https://www.influxdata.com/[InfluxDB], MongoDB, Cassandra, Couchbase, Graphite, Prometheus, ClickHouse, OpenTSDB, DalmatinerDB, KairosDB, RiakTS.
+
+Time Series DB.
+
+Relational databases are difficult to scale.
+
+== Design
+
+Timestamp:: https://en.wikipedia.org/wiki/ISO_8601[ISO 8601] formatted timestamp, according to `yyyy-mm-ddThh:mm:ss.sssZ`
+
+Device ID:: Unique identifier of the device/sensor.
+
+Tags:: A tag for each data reading, e.g. temperature, humidity etc.
+
+=== Adaptive time/space chunking
+
+An approach to indexing not only on timestamp dimension but also on e.g. device ID.
+
+== Concepts
+
+=== Open Solutions
+
+==== Timescale
+
+[TIP]
+====
+http://www.timescale.com/
+
+https://github.com/timescale/timescaledb
+====
+
+Enabling a variety of powerful time-series queries with the SQL you already know.
+
+=== Paid solutions
+
+==== InfluxData (InfluxDB)
+
+TIP: https://www.influxdata.com/
