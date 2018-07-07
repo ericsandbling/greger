@@ -1,0 +1,253 @@
+[debug] [2018-06-27T22:04:12.369Z] ----------------------------------------------------------------------
+[debug] [2018-06-27T22:04:12.372Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\erics\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase init hosting
+[debug] [2018-06-27T22:04:12.372Z] CLI Version:   3.19.1
+[debug] [2018-06-27T22:04:12.372Z] Platform:      win32
+[debug] [2018-06-27T22:04:12.372Z] Node Version:  v8.11.3
+[debug] [2018-06-27T22:04:12.374Z] Time:          Thu Jun 28 2018 00:04:12 GMT+0200 (W. Europe Daylight Time)
+[debug] [2018-06-27T22:04:12.374Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2018-06-27T22:04:12.384Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase"]
+[debug] [2018-06-27T22:04:12.384Z] > authorizing via signed-in user
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  Z:\erics\My Documents\GitHub\greger\nodejs
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] but for now we'll just set up a default project.
+[info] 
+[debug] [2018-06-27T22:04:23.859Z] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
+[debug] [2018-06-27T22:04:23.860Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token  
+ { refresh_token: '1/hCxzlXxM-girZhdWiST1io1Cfi1QZoZ6t6Al0zJFsmw',
+  client_id: '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
+  client_secret: 'j9iVZfS8kkCEFUPaAeJV0sAi',
+  grant_type: 'refresh_token',
+  scope: 'email https://www.googleapis.com/auth/cloudplatformprojects.readonly https://www.googleapis.com/auth/firebase openid' } 
+ Thu Jun 28 2018 00:04:23 GMT+0200 (W. Europe Daylight Time)
+[debug] [2018-06-27T22:04:24.011Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-27T22:04:24.019Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects  
+  
+ Thu Jun 28 2018 00:04:24 GMT+0200 (W. Europe Daylight Time)
+[debug] [2018-06-27T22:04:25.023Z] <<< HTTP RESPONSE 500
+[debug] [2018-06-27T22:04:25.024Z] <<< HTTP RESPONSE BODY
+[error] 
+[error] Error: HTTP Error: 500, An unknown error occurred. Please contact support.
+[debug] [2018-06-27T22:04:25.033Z] Error Context: {
+  "body": {
+    "error": {
+      "code": "UNKNOWN_ERROR",
+      "message": "An unknown error occurred. Please contact support."
+    }
+  },
+  "response": {
+    "statusCode": 500,
+    "body": {
+      "error": {
+        "code": "UNKNOWN_ERROR",
+        "message": "An unknown error occurred. Please contact support."
+      }
+    },
+    "headers": {
+      "server": "nginx",
+      "date": "Wed, 27 Jun 2018 22:04:30 GMT",
+      "content-type": "application/json; charset=utf-8",
+      "content-length": "97",
+      "connection": "close",
+      "x-content-type-options": "nosniff"
+    },
+    "request": {
+      "uri": {
+        "protocol": "https:",
+        "slashes": true,
+        "auth": null,
+        "host": "admin.firebase.com",
+        "port": 443,
+        "hostname": "admin.firebase.com",
+        "hash": null,
+        "search": null,
+        "query": null,
+        "pathname": "/v1/projects",
+        "path": "/v1/projects",
+        "href": "https://admin.firebase.com/v1/projects"
+      },
+      "method": "GET"
+    }
+  }
+}
+[debug] [2018-06-27T22:06:15.789Z] ----------------------------------------------------------------------
+[debug] [2018-06-27T22:06:15.792Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\erics\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase init hosting
+[debug] [2018-06-27T22:06:15.792Z] CLI Version:   3.19.1
+[debug] [2018-06-27T22:06:15.792Z] Platform:      win32
+[debug] [2018-06-27T22:06:15.792Z] Node Version:  v8.11.3
+[debug] [2018-06-27T22:06:15.806Z] Time:          Thu Jun 28 2018 00:06:15 GMT+0200 (W. Europe Daylight Time)
+[debug] [2018-06-27T22:06:15.806Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2018-06-27T22:06:15.825Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase"]
+[debug] [2018-06-27T22:06:15.825Z] > authorizing via signed-in user
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  Z:\erics\My Documents\GitHub\greger\nodejs
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] but for now we'll just set up a default project.
+[info] 
+[debug] [2018-06-27T22:06:26.905Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects  
+  
+ Thu Jun 28 2018 00:06:26 GMT+0200 (W. Europe Daylight Time)
+[debug] [2018-06-27T22:06:28.710Z] <<< HTTP RESPONSE 500
+[debug] [2018-06-27T22:06:28.710Z] <<< HTTP RESPONSE BODY
+[error] 
+[error] Error: HTTP Error: 500, An unknown error occurred. Please contact support.
+[debug] [2018-06-27T22:06:28.718Z] Error Context: {
+  "body": {
+    "error": {
+      "code": "UNKNOWN_ERROR",
+      "message": "An unknown error occurred. Please contact support."
+    }
+  },
+  "response": {
+    "statusCode": 500,
+    "body": {
+      "error": {
+        "code": "UNKNOWN_ERROR",
+        "message": "An unknown error occurred. Please contact support."
+      }
+    },
+    "headers": {
+      "server": "nginx",
+      "date": "Wed, 27 Jun 2018 22:06:34 GMT",
+      "content-type": "application/json; charset=utf-8",
+      "content-length": "97",
+      "connection": "close",
+      "x-content-type-options": "nosniff"
+    },
+    "request": {
+      "uri": {
+        "protocol": "https:",
+        "slashes": true,
+        "auth": null,
+        "host": "admin.firebase.com",
+        "port": 443,
+        "hostname": "admin.firebase.com",
+        "hash": null,
+        "search": null,
+        "query": null,
+        "pathname": "/v1/projects",
+        "path": "/v1/projects",
+        "href": "https://admin.firebase.com/v1/projects"
+      },
+      "method": "GET"
+    }
+  }
+}
+[debug] [2018-06-27T22:12:19.979Z] ----------------------------------------------------------------------
+[debug] [2018-06-27T22:12:19.982Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\erics\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase init
+[debug] [2018-06-27T22:12:19.982Z] CLI Version:   3.19.1
+[debug] [2018-06-27T22:12:19.982Z] Platform:      win32
+[debug] [2018-06-27T22:12:19.982Z] Node Version:  v8.11.3
+[debug] [2018-06-27T22:12:19.984Z] Time:          Thu Jun 28 2018 00:12:19 GMT+0200 (W. Europe Daylight Time)
+[debug] [2018-06-27T22:12:19.984Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2018-06-27T22:12:20.002Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase"]
+[debug] [2018-06-27T22:12:20.003Z] > authorizing via signed-in user
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  Z:\erics\My Documents\GitHub\greger\nodejs
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] but for now we'll just set up a default project.
+[info] 
+[debug] [2018-06-27T22:12:46.906Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects  
+  
+ Thu Jun 28 2018 00:12:46 GMT+0200 (W. Europe Daylight Time)
+[debug] [2018-06-27T22:12:47.814Z] <<< HTTP RESPONSE 200
+[info] 
+=== Functions Setup
+[info] 
+[info] A functions directory will be created in your project with a Node.js
+[info] package pre-configured. Functions can be deployed with firebase deploy.
+[info] 
+[debug] [2018-06-27T22:13:16.322Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2018-06-27T22:13:16.323Z] > authorizing via signed-in user
+[debug] [2018-06-27T22:13:16.323Z] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
+[debug] [2018-06-27T22:13:16.324Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token  
+ { refresh_token: '1/hCxzlXxM-girZhdWiST1io1Cfi1QZoZ6t6Al0zJFsmw',
+  client_id: '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
+  client_secret: 'j9iVZfS8kkCEFUPaAeJV0sAi',
+  grant_type: 'refresh_token',
+  scope: 'email https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/cloudplatformprojects.readonly https://www.googleapis.com/auth/firebase openid' } 
+ Thu Jun 28 2018 00:13:16 GMT+0200 (W. Europe Daylight Time)
+[debug] [2018-06-27T22:13:16.745Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-27T22:13:16.763Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/greger-2760f  
+  
+ Thu Jun 28 2018 00:13:16 GMT+0200 (W. Europe Daylight Time)
+[debug] [2018-06-27T22:13:18.644Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-27T22:13:18.647Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/greger-2760f/tokens  
+  
+ Thu Jun 28 2018 00:13:18 GMT+0200 (W. Europe Daylight Time)
+[debug] [2018-06-27T22:13:19.285Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-27T22:13:19.289Z] >>> HTTP REQUEST PATCH https://servicemanagement.googleapis.com/v1/services/cloudfunctions.googleapis.com/projectSettings/greger-2760f?updateMask=usageSettings  
+ { usageSettings: { consumerEnableStatus: 'ENABLED' } } 
+ Thu Jun 28 2018 00:13:19 GMT+0200 (W. Europe Daylight Time)
+[debug] [2018-06-27T22:13:19.289Z] >>> HTTP REQUEST PATCH https://servicemanagement.googleapis.com/v1/services/runtimeconfig.googleapis.com/projectSettings/greger-2760f?updateMask=usageSettings  
+ { usageSettings: { consumerEnableStatus: 'ENABLED' } } 
+ Thu Jun 28 2018 00:13:19 GMT+0200 (W. Europe Daylight Time)
+[debug] [2018-06-27T22:13:21.054Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-27T22:13:21.450Z] <<< HTTP RESPONSE 200
+[info] +  Wrote functions/package.json
+[info] +  Wrote functions/.eslintrc.json
+[info] +  Wrote functions/index.js
+[info] 
+=== Hosting Setup
+[info] 
+[info] Your public directory is the folder (relative to your project directory) that
+[info] will contain Hosting assets to be uploaded with firebase deploy. If you
+[info] have a build process for your assets, use your build's output directory.
+[info] 
+[debug] [2018-06-27T22:17:46.525Z] >>> HTTP REQUEST GET https://www.gstatic.com/firebasejs/releases.json  
+  
+ Thu Jun 28 2018 00:17:46 GMT+0200 (W. Europe Daylight Time)
+[debug] [2018-06-27T22:17:46.629Z] <<< HTTP RESPONSE 200
+[info] +  Wrote public/index.html
+[info] 
+[info] i  Writing configuration info to firebase.json...
+[info] i  Writing project information to .firebaserc...
+[info] 
+[info] +  Firebase initialization complete!
+[debug] [2018-06-27T22:17:46.782Z] Error: EBUSY: resource busy or locked, unlink 'Z:\erics\My Documents\GitHub\greger\nodejs\firebase-debug.log'
+    at Object.fs.unlinkSync (fs.js:1061:18)
+    at process.<anonymous> (C:\Users\erics\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase:63:8)
+    at emitOne (events.js:121:20)
+    at process.emit (events.js:211:7)

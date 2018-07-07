@@ -1,0 +1,46 @@
+<!Doctype html>
+<html>
+<head>
+  <title>Greger Web Face</title>
+  <!-- Font Family - Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway:300,400,500,700" rel="stylesheet">
+  <!-- <script src="https://use.fontawesome.com/939e9dd52c.js"></script> -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Load the Google Charts Library -->
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+</head>
+<body>
+
+  <div class="mainDiv" align="center">
+    <h1 id="fireHeading" align="left">Temperature</h1>
+    <div id="gaugeDiv" class="gaugeDiv"></div>
+    <button id="refreshBtn" onclick="temperature = 50; drawGauge()"><i class="fa fa-retweet" aria-hidden="true"></i></button>
+  </div>
+
+<!-- Copied from Firebase Dashboard -->
+<script src="https://www.gstatic.com/firebasejs/5.1.0/firebase.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyACtPQBkoCHgFShWOcdJG3xZzzWdS2BUEA",
+    authDomain: "greger-2760f.firebaseapp.com",
+    databaseURL: "https://greger-2760f.firebaseio.com",
+    projectId: "greger-2760f",
+    storageBucket: "greger-2760f.appspot.com",
+    messagingSenderId: "1091147001641"
+  };
+  firebase.initializeApp(config);
+</script>
+<!-- Copied END -->
+
+<!-- Firebase Scripts need to be entered below the firebase section... (?) -->
+<!-- <script src="https://code.jquery.com/jquery-3.1.0.js"></script> -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="index.js"></script>
+
+</body>
+</html>
