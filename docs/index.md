@@ -11,3 +11,7 @@ Markdown is a lightweigth and easy-to-use syntax for styling your writing.
 ### Page 2
 
 [To page 2...](./page_two.md)
+
+### Temperture at Greger
+
+[Greger Temperature Page](../uis/http/greger_index.html)
