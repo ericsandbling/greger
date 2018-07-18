@@ -1,0 +1,62 @@
+= Sensor Hub
+Eric Sandbling, https://github.com/ericsandbling
+:toc:
+:sectnums:
+
+This article describes the hardware and software of the *Greger Client Module (GCM)*
+
+== Hardware
+
+The hardware of the sensor hub is made up of a https://www.raspberrypi.org/[Raspberry Pi (RPi)] with a _RPi i2c 1-Wire Expansion Module_
+
+.RPi i2c 1-Wire Expansion Module v1.1, provided by https://www.m.nu/[m.nu]
+image::https://images.m.nu/data/product/1076f860/R-Pi-i2c-1wire-module.jpg[R-pi i2c 1wire expansion modulev 1.1]
+
+=== 1-Wire Wiring
+
+// Source: https://blog.m.nu/kontakteringsguide-1wire/
+
+These wiring and contacting instructions applies to products provided by https://www.m.nu/[m.nu], except W-SERVER-ENET/WIFI and HA7Net, both from Embedded Data Systems.
+
+To follow and understand these instructions, keep the socket with pins numbered 1-6(8) from left to right.
+
+==== 1-Wire products with RJ12 contacting
+
+The OW-SERVER-ENET/WIFI and HA7Net is powered on pin 6, and pin 2 is not connected. Data return and power return (GND) are shared on these products.
+
+image::https://blog.m.nu/wp-content/uploads/2014/09/1-wire_kontaktering_rj12.jpg[Adaptor RJ12 (1-Wire)]
+
+==== LED pulse detector
+
+image::https://blog.m.nu/wp-content/uploads/2014/09/LED-pulsdetektor.png[LED pulse detector]
+
+==== 1-Wire products with RJ45 contacting
+
+image::https://blog.m.nu/wp-content/uploads/2014/09/1-wire_kontaktering_rj45.jpg[RJ45 1-Wire]
+
+==== 1wire-produkter delivered before 2008-04-01
+
+.Contactor on sensor cable.
+image::http://blog.m.nu/wp-content/uploads/2014/09/1-wire_kontaktering_rj11_sensor.gif[Old Contactor on Sensor Cable]
+
+.Contactor 2, attached to optional extension cable (contactor 1 is contacted according to <<Old Contactor on Sensor Cable, Contactor on Sensor Cable>>).
+image::http://blog.m.nu/wp-content/uploads/2014/09/1-wire_kontaktering_rj11_adapter.gif[]
+
+=== Alternative Hardware
+
+==== Raspberry Pi Zero
+i2c: https://www.abelectronics.co.uk/p/76/1-Wire-Pi-Zero[1 wire communication board for the RPi Zero]
+
+[quote]
+Smaller, cheaper... better? This needs further exploration.
+
+== Software
+
+// ToDo:
+//
+//  - Docker
+//        https://www.raspberrypi.org/blog/docker-comes-to-raspberry-pi/
+//
+//  - 1-Wire File System (OWFS)
+//      https://wiki.m.nu/index.php/OWFS_p%C3%A5_Rasperry_Pi
+//      http://owfs.org/index.php?page=owfs
