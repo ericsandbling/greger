@@ -1,17 +1,17 @@
-= Sensor Hub
+= Greger Client Module (GCM)
 Eric Sandbling, https://github.com/ericsandbling
 :toc:
 :toclevels: 5
 :sectnums:
 
-This article describes the hardware and software of the *Greger Client Module (GCM)*
+This article describes the hardware and software of the *Greger Client Module (GCM)*. As well as the setup and installation process.
 
 == Hardware
 
 The hardware of the sensor hub is made up of a https://www.raspberrypi.org/[Raspberry Pi (RPi)] with a _RPi i2c 1-Wire Expansion Module_
 
 .RPi i2c 1-Wire Expansion Module v1.1, provided by https://www.m.nu/[m.nu]
-image::https://images.m.nu/data/product/1076f860/R-Pi-i2c-1wire-module.jpg[R-pi i2c 1wire expansion modulev 1.1]
+image::https://images.m.nu/data/product/1076f860/R-Pi-i2c-1wire-module.jpg[R-pi i2c 1wire expansion module v1.1]
 
 === 1-Wire Wiring
 
@@ -20,6 +20,101 @@ image::https://images.m.nu/data/product/1076f860/R-Pi-i2c-1wire-module.jpg[R-pi 
 These wiring and contacting instructions applies to products provided by https://www.m.nu/[m.nu], except W-SERVER-ENET/WIFI and HA7Net, both from Embedded Data Systems.
 
 To follow and understand these instructions, keep the socket with pins numbered 1-6(8) from left to right.
+
+==== RJ12 splitter and 1-wire
+
+A standard RJ12 splitter (_1-to-2_) are wired according to <<Digitrax Wiring Standards>>.
+
+.Digitrax Wiring Standards.
+image::http://www.railwaybob.com/Modules/WiringRJ12s/RJ12JackWires.jpg[Digitrax Wiring Standards]
+
+Mapping between the Digitrax Wiring Standards (DWS,RJ12 Splitter) and a 1-Wire product is according to:
+
+.1-Wire Wiring Mapping
+|===
+|Pin 2+|DWS 3+|1-Wire (RJ12) 3+|1-Wire (RJ45)
+
+|1                   {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:white}
+|White               {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:orange}
+|Orange              {set:cellbgcolor:auto}
+|PWR (+5v)           {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:palegreen}
+|Green/White         {set:cellbgcolor:auto}
+|GND (Power Return)  {set:cellbgcolor:auto}
+
+|2                   {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:black}
+|Black               {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:#ffd78e}
+|Orange/White        {set:cellbgcolor:auto}
+|GND (Power Return)  {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:green}
+|Green               {set:cellbgcolor:auto}
+|PWR (+5v)           {set:cellbgcolor:auto}
+
+|3                   {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:Red}
+|Red                 {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:blue}
+|Blue                {set:cellbgcolor:auto}
+|DQ (1-Wire Data)    {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:#ffd78e}
+|Orange/White        {set:cellbgcolor:auto}
+|GND (Power Return)  {set:cellbgcolor:auto}
+
+|4                   {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:green}
+|Green               {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:lightblue}
+|Blue/White          {set:cellbgcolor:auto}
+|GND (1-Wire Return) {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:blue}
+|Blue                {set:cellbgcolor:auto}
+|DQ (1-Wire Data)    {set:cellbgcolor:auto}
+
+|5                   {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:yellow}
+|Yellow              {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:lightblue}
+|Blue/White          {set:cellbgcolor:auto}
+|GND (1-Wire Return) {set:cellbgcolor:auto}
+
+|6                   {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:blue}
+|Blue                {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:orange}
+|Orange              {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:auto}
+
+|7                   {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:burlywood}
+|Brown/White         {set:cellbgcolor:auto}
+|+12v/+24v Unregulated  {set:cellbgcolor:auto}
+
+|8                   {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:auto}
+|                    {set:cellbgcolor:saddlebrown}
+|Brown               {set:cellbgcolor:auto}
+|GND (Power Return)  {set:cellbgcolor:auto}
+
+|===
 
 ==== 1-Wire products with RJ12 contacting
 
