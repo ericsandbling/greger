@@ -1,6 +1,7 @@
 = Sensor Hub
 Eric Sandbling, https://github.com/ericsandbling
 :toc:
+:toclevels: 5
 :sectnums:
 
 This article describes the hardware and software of the *Greger Client Module (GCM)*
@@ -56,7 +57,54 @@ Smaller, cheaper... better? This needs further exploration.
 //
 //  - Docker
 //        https://www.raspberrypi.org/blog/docker-comes-to-raspberry-pi/
+// https://blog.alexellis.io/getting-started-with-docker-on-raspberry-pi/
 //
 //  - 1-Wire File System (OWFS)
 //      https://wiki.m.nu/index.php/OWFS_p%C3%A5_Rasperry_Pi
 //      http://owfs.org/index.php?page=owfs
+
+=== Headless Raspberry Pi Setup
+
+==== Step 1: Download Raspian Image
+
+Download the latest *Lite* Raspbian Image (_Stretch_) from https://www.raspberrypi.org/downloads/raspbian/.
+
+[quote]
+The Raspbian Stretch *Lite* image is the same as the *Desktop* image but contains only the bare minimum amount of packages.
+
+==== Step 2: Write Image to SD card
+
+Flash the SD card, see the official https://www.raspberrypi.org/documentation/installation/installing-images/README.md[Installation Instructions] available at the Raspberry Pi web page.
+
+==== Step 3: Enable SSH on the SD card
+
+Enable SSH by placing a file named `ssh` (without any extension) onto the boot partition of the SD card.
+
+==== Step 4: Prepare (headless) WiFi
+
+Create a file named `wpa_supplicant.conf` and place in the boot partition of the SD card.
+
+This time you need to write a few lines of text for this file. For this file, you need to use the FULL VERSION of `wpa_supplicant.conf`. Meaning you must have the 3 lines of data namely ``country``, ``ctrl_interface`` and ``update_config``
+
+.wpa_supplicant.conf
+----
+country="«your_ISO-3166-1_two-letter_country_code»"
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+update_config=1
+
+network={
+   ssid="«your_SSID»"
+   scan_ssid=1
+   psk="«your_PSK»"
+   key_mgmt=WPA-PSK
+}
+----
+
+Replace ``«your_ISO-3166-1_two-letter_country_code»`` with your https://www.iso.org/obp/ui/#search/code/[ISO Country Code] (such as ``SE`` for Sweden), ``«your_SSID»`` with your wireless access point name and ``«your_PSK»`` with your Wi-Fi password.
+
+NOTE::
+The password can be configured either as the ASCII representation, in quotes as per the example above, or as a pre-encrypted 32 byte hexadecimal number. https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md[See Setting up WiFi via CLI *@* www.raspberrypi.org]
+
+==== Step 5: Power up
+
+Insert SD card into your RPi and power up.
