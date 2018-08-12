@@ -19,18 +19,8 @@ image::https://images.m.nu/data/product/1076f860/R-Pi-i2c-1wire-module.jpg[R-pi 
 
 These wiring and contacting instructions applies to products provided by https://www.m.nu/[m.nu], except W-SERVER-ENET/WIFI and HA7Net, both from Embedded Data Systems.
 
-To follow and understand these instructions, keep the socket with pins numbered 1-6(8) from left to right.
-
-==== RJ12 splitter and 1-wire
-
-A standard RJ12 splitter (_1-to-2_) are wired according to <<Digitrax Wiring Standards>>.
-
-.Digitrax Wiring Standards.
-image::http://www.railwaybob.com/Modules/WiringRJ12s/RJ12JackWires.jpg[Digitrax Wiring Standards]
-
-Mapping between the Digitrax Wiring Standards (DWS,RJ12 Splitter) and a 1-Wire product is according to:
-
 .1-Wire Wiring Mapping
+[cols="1,1,2,1,2,4,1,2,4"]
 |===
 |Pin 2+|DWS 3+|1-Wire (RJ12) 3+|1-Wire (RJ45)
 
@@ -116,27 +106,10 @@ Mapping between the Digitrax Wiring Standards (DWS,RJ12 Splitter) and a 1-Wire p
 
 |===
 
-==== 1-Wire products with RJ12 contacting
+On 1-Wire products with RJ12 contacting, the OW-SERVER-ENET/WIFI and HA7Net is powered on pin 6, and pin 2 is not connected. Data return and power return (GND) are shared on these products.
 
-The OW-SERVER-ENET/WIFI and HA7Net is powered on pin 6, and pin 2 is not connected. Data return and power return (GND) are shared on these products.
-
-image::https://blog.m.nu/wp-content/uploads/2014/09/1-wire_kontaktering_rj12.jpg[Adaptor RJ12 (1-Wire)]
-
-==== LED pulse detector
-
-image::https://blog.m.nu/wp-content/uploads/2014/09/LED-pulsdetektor.png[LED pulse detector]
-
-==== 1-Wire products with RJ45 contacting
-
-image::https://blog.m.nu/wp-content/uploads/2014/09/1-wire_kontaktering_rj45.jpg[RJ45 1-Wire]
-
-==== 1wire-produkter delivered before 2008-04-01
-
-.Contactor on sensor cable.
-image::http://blog.m.nu/wp-content/uploads/2014/09/1-wire_kontaktering_rj11_sensor.gif[Old Contactor on Sensor Cable]
-
-.Contactor 2, attached to optional extension cable (contactor 1 is contacted according to <<Old Contactor on Sensor Cable, Contactor on Sensor Cable>>).
-image::http://blog.m.nu/wp-content/uploads/2014/09/1-wire_kontaktering_rj11_adapter.gif[]
+NOTE::
+Further wiring and contacting instructions can be had at https://blog.m.nu/kontakteringsguide-1wire/
 
 === Alternative Hardware
 
@@ -203,3 +176,129 @@ The password can be configured either as the ASCII representation, in quotes as 
 ==== Step 5: Power up
 
 Insert SD card into your RPi and power up.
+
+=== Setup Docker
+
+Follow the instructions kindly provided by Docker captain https://twitter.com/alexellisuk[Alex Ellis] at https://blog.alexellis.io/getting-started-with-docker-on-raspberry-pi/[Getting Started with Docker on Raspberry Pi].
+
+=== Setup OWFS on Raspberry Pi
+
+==== Enable modules and configuration
+
+Ensure the ``i2c-bcm2708`` and ``i2c-dev`` modules are included in ``/etc/modules``.
+
+  $ sudo nano /etc/modules
+
+The modules should be included on separate lines according to:
+
+  i2c-bcm2708
+  i2c-dev
+
+Open `/boot/configt.txt`
+
+  $ sudo nano /boot/config.txt
+
+Add the following lines at the end pf the file:
+
+  dtparam=i2c1=on
+  dtparam=i2c_arm=on
+
+Reboot the RPi.
+
+==== Verify contact with the i2c-board
+
+Install `i2c-tools` with `apt-get`.
+
+  $ sudo apt-get install i2c-tools
+
+Run `i2cdetect`
+
+  $ sudo i2cdetect -y 1
+
+Which should result in something like this:
+
+  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+  00:          -- -- -- -- -- -- -- -- -- -- -- -- --
+  10: -- -- -- -- -- -- -- -- -- -- -- 1b -- -- -- --
+  20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+  30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+  40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+  50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+  60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+  70: -- -- -- -- -- -- -- --
+
+If you get `1b` (`18` might also appear), the i2c-board is successfully detected.
+
+==== Install OWFS
+
+OWFS is available as a package for Raspbian and can be installed using `apt-get`.
+
+  $ sudo apt-get install owfs
+
+==== Verify the OWFS Installation
+
+Create the folder for the OWFS the mount in.
+
+  $ sudo mkdir /mnt/1wire
+
+Configure FUSE to work correctly.
+
+  $ sudo nano /etc/fuse.conf
+
+Uncomment the line (remove the hash `#`)
+
+  #user_allow_other
+
+Mount the OWFS with:
+
+  $ sudo /usr/bin/owfs --i2c=ALL:ALL --allow_other /mnt/1wire/
+
+Verify that it works with:
+
+  $ cat /mnt/1wire/<<YOUR_SENSOR_ID>>/temperature
+
+If everything works correctly you should se a temperature printed to the prompt.
+
+==== Ensure OWFS Starts at Boot
+
+To ensure OWFS is started and mounted at startup a small script is needed.
+
+Create a start script `start1wire.sh` in `/etc/init.d/`, containing the following lines:
+
+.start1wire.sh
+----
+#!/bin/bash
+
+### BEGIN INIT INFO
+# Provides:          start1wire
+# Required-Start:    $local_fs $syslog
+# Required-Stop:     $local_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start OWFS at boot time
+# Description:       Start OWFS at boot time
+### END INIT INFO
+
+# Starts OWFS
+/opt/owfs/bin/owfs --i2c=ALL:ALL --allow_other /mnt/1wire
+----
+
+Add correct user privileges to the script.
+
+  $ sudo chmod +x /etc/init.d/start1wire.sh
+
+Tell the RPi to run the script at startup.
+
+  $ cd /etc/init.d/
+  $ sudo update-rc.d start1wire.sh defaults
+
+Now the setup should be complete and the OWFS should start and mount at startup.
+
+Alternative way to install...
+
+=== Install Firebase Python Library
+
+Requires ``pip`` (`sudo aplt-get install python-pip`).
+
+ $  sudo pip install requests==1.1.0
+ $  sudo pip install python-firebase
