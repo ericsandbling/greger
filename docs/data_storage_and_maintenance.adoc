@@ -1,14 +1,42 @@
+= Data Storage and Maintenance
+Eric Sandbling, https://github.com/ericsandbling
+:toc:
+:toclevels: 5
+:sectnums:
+
+This article describes the structure and usage of data storage and maintenance in the *Greger Cloud*.
+
 :toc: right
 
 == General
 
-*Relational databases include:* MySQL, MariaDB Server, PostgreSQL. *NoSQL databases include:* Elastic, https://www.influxdata.com/[InfluxDB], MongoDB, Cassandra, Couchbase, Graphite, Prometheus, ClickHouse, OpenTSDB, DalmatinerDB, KairosDB, RiakTS.
-
-Time Series DB.
-
-Relational databases are difficult to scale.
+Data storage for Greger is facilitated with https://firebase.google.com/[Google Firebase].
 
 == Design
+
+.1wireDevices
+----
+{
+  "1wireDevices" : {
+    <Device ID> : {
+      "timestamp" : <ISO8601 timestamp>,
+      <Sensor 1> : <latest reading>,
+      ...
+      <Sensor N> : <latest reading>,
+      "type" : <1-wire sensor type>
+      "family" : <1-wire sensor family>
+      "posts" : {
+        <UID> : {
+          "timestamp" : <ISO8601 timestamp>,
+          <Sensor 1> : <latest reading>,
+          ...
+          <Sensor M> : <latest reading>,
+        }
+      }
+    }
+  }
+}
+----
 
 Timestamp:: https://en.wikipedia.org/wiki/ISO_8601[ISO 8601] formatted timestamp, according to `yyyy-mm-ddThh:mm:ss.sssZ`
 
