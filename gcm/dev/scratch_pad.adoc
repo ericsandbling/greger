@@ -1,0 +1,4 @@
+= The Scratch Pad
+:author: E.Sandbling
+
+This document is meant as a general dump of knowledge...
