@@ -1,0 +1,50 @@
+= Greger Client Module
+:author: E.Sandbling
+
+:toc:
+:sectnums:
+
+This document describes the Greger Client Module (GCM) application.
+
+== About
+
+The GCM application is component in the Greger project responsible for locally aggregating device data and publishing this to the central database, Greger Database (GDB).
+
+== Usage
+
+ python -u gcm [-h] [-rt RUNTIME]
+
+optional arguments::
+----
+  -h, --help             show this help message and exit
+  -rt RUNTIME, --runTime RUNTIME
+                         Run-time of the application in seconds. 0 = Infinite
+                         runtime.
+----
+
+== Installation
+
+== Install dependencies
+
+Before running or deploying this application, install the dependencies using pip:
+
+ pip install -t lib -r requirements.txt
+
+=== Configure your application
+
+Update `gcm/config.cfg` with the name of your GCM, and the name of your GDB, and copy to local directory: `/etc/gcm/`
+
+.config.cfg
+----
+[global]
+LOGFILE = /var/log/gcm/syslog.log
+CLIENT_MODULE_NAME = <YOUR_GCM_NAME>
+
+[firebase]
+FIREBASE_APP = https://<YOUR_FIREBASE_DATABASE_NAME>.firebaseio.com/
+FIREBASE_CERT = /etc/gcm/certs/firebase_private.json
+----
+
+=== Firebase Certificate
+
+Place a file named ``firebase_private.json``, containing an access token to your Firebase database in the local ``/etc/gcm/certs/`` folder on your RPi acting as the Greger Client Module.
