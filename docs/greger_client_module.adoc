@@ -185,6 +185,9 @@ Follow the instructions kindly provided by Docker captain https://twitter.com/al
 
 ==== Enable modules and configuration
 
+// ToDo:
+// - Check if it is possible to install i2c using raspi-config instead.
+
 Ensure the ``i2c-bcm2708`` and ``i2c-dev`` modules are included in ``/etc/modules``.
 
   $ sudo nano /etc/modules
@@ -217,15 +220,17 @@ Run `i2cdetect`
 
 Which should result in something like this:
 
-  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
-  00:          -- -- -- -- -- -- -- -- -- -- -- -- --
-  10: -- -- -- -- -- -- -- -- -- -- -- 1b -- -- -- --
-  20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-  30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-  40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-  50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-  60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-  70: -- -- -- -- -- -- -- --
+----
+0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+00:          -- -- -- -- -- -- -- -- -- -- -- -- --
+10: -- -- -- -- -- -- -- -- -- -- -- 1b -- -- -- --
+20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+70: -- -- -- -- -- -- -- --
+----
 
 If you get `1b` (`18` might also appear), the i2c-board is successfully detected.
 
@@ -298,7 +303,12 @@ Alternative way to install...
 
 === Install Firebase Python Library
 
-Requires ``pip`` (`sudo aplt-get install python-pip`).
+The https://github.com/ozgur/python-firebase[Firebase Python Library], maintained by https://github.com/ozgur[ozgurv], is a easy to use Python interface to the Firebase REST API.
+
+python-firebase makes heavy use of the ``requests`` library, so this need installing as well.
+
+[NOTE]
+Installing these python libraries requires ``pip`` (`sudo apt-get install python-pip`).
 
  $  sudo pip install requests==1.1.0
  $  sudo pip install python-firebase
