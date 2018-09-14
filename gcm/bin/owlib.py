@@ -4,7 +4,7 @@
 """
 owlib - Library for 1-wire devices.
 
-Ligrary of function adapted for the Greger Client Module (GCM).
+Library of function adapted for the Greger Client Module (GCM).
 """
 
 __author__ = "Eric Sandbling"
