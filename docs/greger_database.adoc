@@ -1,17 +1,16 @@
-= Data Storage and Maintenance
+= Greger Database
 Eric Sandbling, https://github.com/ericsandbling
+:author: E. Sandbling
 :toc:
 :toclevels: 5
 :sectnums:
 
 This article describes the structure and usage of data storage and maintenance
-in the *Greger Cloud*.
-
-:toc: right
+in the *Greger Database*.
 
 == General
 
-Data storage for Greger is facilitated with https://firebase.google.com/[Google Firebase].
+Central data storage for the Greger project is facilitated with the use of https://firebase.google.com/[Google Firebase].
 
 == Design
 
@@ -44,28 +43,3 @@ Timestamp:: https://en.wikipedia.org/wiki/ISO_8601[ISO 8601] formatted timestamp
 Device ID:: Unique identifier of the device/sensor.
 
 Tags:: A tag for each data reading, e.g. temperature, humidity etc.
-
-=== Adaptive time/space chunking
-
-An approach to indexing not only on timestamp dimension but also on e.g. device ID.
-
-== Concepts
-
-=== Open Solutions
-
-==== Timescale
-
-[TIP]
-====
-http://www.timescale.com/
-
-https://github.com/timescale/timescaledb
-====
-
-Enabling a variety of powerful time-series queries with the SQL you already know.
-
-=== Paid solutions
-
-==== InfluxData (InfluxDB)
-
-TIP: https://www.influxdata.com/
