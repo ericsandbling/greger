@@ -4,7 +4,8 @@ Eric Sandbling, https://github.com/ericsandbling
 :toclevels: 5
 :sectnums:
 
-This article describes the structure and usage of data storage and maintenance in the *Greger Cloud*.
+This article describes the structure and usage of data storage and maintenance
+in the *Greger Cloud*.
 
 :toc: right
 
@@ -18,19 +19,19 @@ Data storage for Greger is facilitated with https://firebase.google.com/[Google 
 ----
 {
   "1wireDevices" : {
-    <Device ID> : {
+    {Device ID} : {
       "timestamp" : <ISO8601 timestamp>,
-      <Sensor 1> : <latest reading>,
+      {Sensor 1} : <latest reading>,
       ...
-      <Sensor N> : <latest reading>,
+      {Sensor N} : <latest reading>,
       "type" : <1-wire sensor type>
       "family" : <1-wire sensor family>
       "posts" : {
-        <UID> : {
+        {UID} : {
           "timestamp" : <ISO8601 timestamp>,
-          <Sensor 1> : <latest reading>,
+          {Sensor 1} : <latest reading>,
           ...
-          <Sensor M> : <latest reading>,
+          {Sensor N} : <latest reading>,
         }
       }
     }
