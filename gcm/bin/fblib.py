@@ -4,7 +4,7 @@
 """
 fblib - Library for Firebase database.
 
-Ligrary of functions adapted for the Greger Client Module (GCM).
+Library of functions adapted for the Greger Client Module (GCM).
 """
 
 __author__ = "Eric Sandbling"
@@ -23,10 +23,10 @@ from firebase_admin import db
 # Local parameters
 CLIENTS_ROOT = "clientModules"
 
-class RTDB(object):
+class GDB(object):
     '''
-    Class representing all Firebase RealTime DataBase (RTDB) actions available
-    to the Greger Client Module (GCM).
+    Class representing all Greger (Firebase RealTime) DataBase (GDB) actions
+    available to the Greger Client Module (GCM).
     '''
 
     def __init__(self, config, location):
@@ -34,8 +34,9 @@ class RTDB(object):
         Initialize class.
         '''
         # Logging
-        self.log = logging.getLogger("gcm.RTDB")
-        self.log.debug("Creating Class Log for Realtime Database (RTDB).")
+        self.logPath = "root.GDB"
+        self.log = logging.getLogger(self.logPath)
+        self.log.debug("Creating Class Log for Realtime Database (GDB).")
 
         # Define parameters
         self.config = config
@@ -55,7 +56,7 @@ class RTDB(object):
         Initiate Firebase Admin SDK connection and obtain Realtime Database
         reference (root)
         '''
-        localLog = logging.getLogger("gcm.fblib.RTDB._initConnection")
+        localLog = logging.getLogger(self.logPath + "._initConnection")
 
         # Initiate connection using Certificate
         localLog.debug("Attempting to initiate connection to Firebase Realtime Database...")
@@ -87,7 +88,7 @@ class RTDB(object):
         '''
         Reset and/or setup Greger Client Module account with default values.
         '''
-        localLog = logging.getLogger("gcm.fblib.RTDB._setupAccount")
+        localLog = logging.getLogger(self.logPath + "._setupAccount")
 
         # Does client exist?
         if self.dbRoot.child(self.clientRoot).get(shallow=True) is None:
@@ -142,7 +143,7 @@ class RTDB(object):
         '''
         Get GCM settings.
         '''
-        localLog = logging.getLogger("gcm.fblib.RTDB.getSettings")
+        localLog = logging.getLogger(self.logPath + ".getSettings")
 
         # Ensure CLient Module has an account and settings
         localLog.debug("Ensuring GCM has an account with settings.")
@@ -186,7 +187,7 @@ class RTDB(object):
         '''
         Update Greger Client Module account child with value at path.
         '''
-        localLog = logging.getLogger("gcm.fblib.RTDB.update")
+        localLog = logging.getLogger(self.logPath + ".update")
 
         localLog.debug("Attempting to update GCM account child...")
         try:

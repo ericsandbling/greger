@@ -46,7 +46,8 @@ class owDevices(object):
         Initialize class
         '''
         # Logging
-        self.log = logging.getLogger("gcm.owDevices")
+        self.logPath = "root.owDevices"
+        self.log = logging.getLogger(self.logPath)
         self.log.debug("Creating Class Log for 1-Wire Devices (owDevices).")
 
         # Input data
@@ -84,7 +85,7 @@ class owDevices(object):
         '''
         Calculate if it is time to empty the Timeseries Bucket.
         '''
-        localLog = logging.getLogger("gcm.owlib.owDevices._timeToEmptyBucket")
+        localLog = logging.getLogger(self.logPath + "._timeToEmptyBucket")
 
         # Initialize local variable
         answer = False
@@ -140,7 +141,7 @@ class owDevices(object):
         '''
         Empty timeseries timeBucket.
         '''
-        localLog = logging.getLogger("gcm.owlib.owDevices._emptyBucket")
+        localLog = logging.getLogger(self.logPath + "._emptyBucket")
 
         # Empty each device in bucket to timeseries
         for deviceId in self._timeBucket:
@@ -197,7 +198,7 @@ class owDevices(object):
         '''
         Set timeseries bucket time.
         '''
-        localLog = logging.getLogger("gcm.owlib.owDevices._setBucketTime")
+        localLog = logging.getLogger(self.logPath + "._setBucketTime")
 
         # Get current time as a list
         timeStruct = [
@@ -262,7 +263,7 @@ class owDevices(object):
         '''
         Scan 1-Wire devices and update cuurent reading
         '''
-        localLog = logging.getLogger("gcm.owlib.owDevices.readAll")
+        localLog = logging.getLogger(self.logPath + ".readAll")
 
         # Init local variables
         warningMsg = ''
