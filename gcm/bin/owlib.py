@@ -15,10 +15,6 @@ import ow
 import time, sys
 import logging
 
-# logger
-module_logger = logging.getLogger("gcm.owlib")
-# module_logger.setLevel(logging.DEBUG)
-
 # Functions for each sensor type goes here.
 def _ds18b20(sensor,ndigits=1):
     '''Return available sensor values.'''
@@ -50,7 +46,7 @@ class owDevices(object):
         Initialize class
         '''
         # Logging
-        self.log = logging.getLogger("gcm.owlib.owDevices")
+        self.log = logging.getLogger("gcm.owDevices")
         self.log.debug("Creating Class Log for 1-Wire Devices (owDevices).")
 
         # Input data
