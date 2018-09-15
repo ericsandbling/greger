@@ -23,15 +23,10 @@ from firebase_admin import db
 # Local parameters
 CLIENTS_ROOT = "clientModules"
 
-# logger
-module_logger = logging.getLogger("gcm.fblib")
-# module_logger.setLevel(logging.DEBUG)
-# module_logger.setLevel(logging.INFO)
-
 class RTDB(object):
     '''
-    Class representing all Firebase RealTime DataBase (RTDB) actions available to
-    the Greger Client Module (GCM).
+    Class representing all Firebase RealTime DataBase (RTDB) actions available
+    to the Greger Client Module (GCM).
     '''
 
     def __init__(self, config, location):
@@ -39,7 +34,7 @@ class RTDB(object):
         Initialize class.
         '''
         # Logging
-        self.log = logging.getLogger("gcm.fblib.RTDB")
+        self.log = logging.getLogger("gcm.RTDB")
         self.log.debug("Creating Class Log for Realtime Database (RTDB).")
 
         # Define parameters
@@ -82,17 +77,17 @@ class RTDB(object):
 
         # Ensure client is defined
         localLog.debug("Ensuring this Greger Client Module (" + self.clientName + ") account is correct and updated...")
-        self._setupGCMAccount()
+        self._setupAccount()
 
         # Retrieve Settings
         localLog.debug("Attempting to retrieve settings from account...")
         self.getSettings()
 
-    def _setupGCMAccount(self):
+    def _setupAccount(self):
         '''
         Reset and/or setup Greger Client Module account with default values.
         '''
-        localLog = logging.getLogger("gcm.fblib.RTDB._setupGCMAccount")
+        localLog = logging.getLogger("gcm.fblib.RTDB._setupAccount")
 
         # Does client exist?
         if self.dbRoot.child(self.clientRoot).get(shallow=True) is None:
@@ -153,7 +148,7 @@ class RTDB(object):
         localLog.debug("Ensuring GCM has an account with settings.")
         if self.dbRoot.child(self.clientRoot).get(shallow=True) is None:
             if self.dbRoot.child(self.clientRoot + "/settings").get(shallow=True) is None:
-                self._setupGCMAccount()
+                self._setupAccount()
 
         # Get new settings
         localLog.debug("Attempting to retrieve new/updated settings...")
@@ -193,7 +188,7 @@ class RTDB(object):
         '''
         localLog = logging.getLogger("gcm.fblib.RTDB.update")
 
-        localLog.debug("Attempting to update GCM account child")
+        localLog.debug("Attempting to update GCM account child...")
         try:
             self.dbGCMRoot.child(path).update(value)
         except Exception as e:
