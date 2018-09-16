@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-configlib - Configurations.
-
-Library of functions adapted for the Greger Client Module (GCM).
+Configuration and settings library for the Greger Client Module software.
 """
 
 __author__ = "Eric Sandbling"
