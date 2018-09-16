@@ -17,8 +17,8 @@ from gcm import GCM
 
 # Create root logger
 logger = logging.getLogger("root")
-# logger.setLevel(logging.DEBUG)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
+# logger.setLevel(logging.INFO)
 
 # Create logging handlers
 consoleHandler = logging.StreamHandler()
@@ -37,14 +37,16 @@ consoleHandler.setFormatter(formatter)
 logger.addHandler(consoleHandler)
 
 if __name__ == '__main__':
+
+    logger.info("==== APPLICATION START ====")
     try:
         APP = GCM()
     except KeyboardInterrupt:
         print 'Interrupted!'
+        logger.info("Interrupted!")
         try:
             sys.exit("\n=== APPLICATION END (sys) ===")
         except SystemExit:
-            print "\n=== APPLICATION END (os) ==="
             os._exit(0)
 
-    print "\n=== APPLICATION END (-) ==="
+    logger.info("==== APPLICATION END ====")
