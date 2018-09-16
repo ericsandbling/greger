@@ -21,7 +21,8 @@ from firebase_admin import credentials
 from firebase_admin import db
 
 # Local Modules
-from configlib import getLocalConfig
+from cfg import getLocalConfig
+from cfg import setLogLevel
 
 class GDB(object):
     '''
@@ -29,7 +30,6 @@ class GDB(object):
     available to the Greger Client Module (GCM).
     '''
 
-    # def __init__(self, config, location):
     def __init__(self):
         '''
         Initialize class.
@@ -43,22 +43,6 @@ class GDB(object):
         # Define parameters
         self.settings = {}
         self.about = {}
-
-        # Get Local Configuration Parameters
-        # localLog.debug("Getting configuration parameters from file...")
-
-        # config = getLocalConfig()
-        # self.GDBConfig = {}
-
-        # self.GDBConfig.update({'gcmName' : config.get("greger_client_module", "name")})
-        # self.GDBConfig.update({'gcmLocation' : config.get("greger_client_module", "location")})
-        #
-        # self.GDBConfig.update({'gdbRoot' : config.get("greger_database", "root") + "/" + self.GDBConfig['gcmName']})
-        # self.GDBConfig.update({'gdbPath' : config.get("greger_database", "path")})
-        # self.GDBConfig.update({'gdbCert' : config.get("greger_database", "cert")})
-
-        # for parameter in self.GDBConfig:
-        #     localLog.debug("Parameter: " + parameter + " = " + self.GDBConfig[parameter])
 
         # Initialize Firebase connection
         self._initConnection()
@@ -74,14 +58,21 @@ class GDB(object):
         localLog.debug("Getting configuration parameters from file...")
         config = getLocalConfig()
 
+        # Locally relevant parameters
+        gdbCert = config.get("greger_database", "cert")
+        gdbURI = config.get("greger_database", "uri")
+        gcmName = config.get("greger_client_module","name")
+        localLog.debug("Parameter: (gdbCert) " + gdbCert)
+        localLog.debug("Parameter: (gdbURI) " + gdbURI)
+        localLog.debug("Parameter: (gcmName) " + gcmName)
+
+
         # Initiate connection using Certificate
         localLog.debug("Attempting to initiate connection to Firebase Realtime Database...")
         try:
-            gdbCert = config.get("greger_database", "cert")
             self.cred = credentials.Certificate(gdbCert)
             localLog.debug("Credentials successfully entered from " + gdbCert)
 
-            gdbURI = config.get("greger_database", "uri")
             self.firebase_app = firebase_admin.initialize_app(self.cred, {'databaseURL': gdbURI})
             localLog.debug("Handle to Realtime Database successfully obtained from " + gdbURI)
 
@@ -96,7 +87,7 @@ class GDB(object):
 
 
         # Ensure client is defined
-        localLog.debug("Ensuring account for " + config.get("greger_client_module","name") + " is correct and updated...")
+        localLog.debug("Ensuring account for " + gcmName + " is correct and updated...")
         self._setupAccount()
 
         # Retrieve Settings
@@ -115,28 +106,35 @@ class GDB(object):
         # Get Local Configuration Parameters
         localLog.debug("Getting configuration parameters from file...")
         config = getLocalConfig()
-        self.gdbRootPath = config.get("greger_database", "root") + "/" + config.get("greger_client_module","name")
+
+        # Locally relevant parameters
+        clientsRoot = config.get("greger_database", "root")
+        gcmPath = clientsRoot + "/" + config.get("greger_client_module","name")
+        defaultPath = clientsRoot + "/" + "default"
+        localLog.debug("Parameter: (clientsRoot) " + clientsRoot)
+        localLog.debug("Parameter: (gcmPath) " + gcmPath)
+        localLog.debug("Parameter: (defaultPath) " + defaultPath)
 
         # Does client exist?
-        if self.dbRoot.child(self.gdbRootPath).get(shallow=True) is None:
-            localLog.debug("GCM account is missing.")
-            localLog.debug("Attempting to create GCM account using default account.")
+        if self.dbRoot.child(gcmPath).get(shallow=True) is None:
+            localLog.debug("GCM account is missing!")
+            localLog.debug("Attempting to create GCM account using GDB default account.")
             try:
-                self.dbRoot.child(self.GDBConfig['gdbRoot']).update(self.dbRoot.child(CLIENTS_ROOT + "/default").get())
-                self.log.info("Greger Client Module Account successfully created from default!")
+                self.dbRoot.child(gcmPath).update(self.dbRoot.child(defaultPath).get())
+                self.log.info("Greger Client Module account successfully created from default!")
             except Exception as e:
-                self.log.error("Oops! Failed to create Greger Client Module Account on server! - " + str(e))
+                self.log.error("Oops! Failed to create Greger Client Module account on server! - " + str(e))
 
         # Does settings exist?
         localLog.debug("Checking the existense of the /settings child on the server account...")
-        if self.dbRoot.child(self.GDBConfig['gdbRoot'] + "/settings").get(shallow=True) is None:
+        if self.dbRoot.child(gcmPath + "/settings").get(shallow=True) is None:
             localLog.debug("Child missing!")
             localLog.debug("Attempting to add settings using default settings...")
             try:
-                self.dbRoot.child(self.GDBConfig['gdbRoot'] + "/settings").update(self.dbRoot.child(CLIENTS_ROOT + "/default/settings").get())
-                self.log.info("Settings successfully added to Greger Client Module Account from default!")
+                self.dbRoot.child(gcmPath + "/settings").update(self.dbRoot.child(defaultPath + "/settings").get())
+                self.log.info("Settings successfully added to Greger Client Module account from default!")
             except Exception as e:
-                self.log.error("Oops! Failed to add settings to Greger Client Module Account on server! - " + str(e))
+                self.log.error("Oops! Failed to add settings to Greger Client Module account on server! - " + str(e))
 
         # Does all settings exist?
         else:
@@ -144,15 +142,15 @@ class GDB(object):
             localLog.debug("Checking that all settings are present in GCM account...")
             localLog.debug("Attempting to retrieve settings...")
             try:
-                defaultSettings = self.dbRoot.child(CLIENTS_ROOT + "/default/settings").get()
-                gcmSettings = self.dbRoot.child(self.GDBConfig['gdbRoot'] + "/settings").get()
+                defaultSettings = self.dbRoot.child(defaultPath + "/settings").get()
+                gcmSettings = self.dbRoot.child(gcmPath + "/settings").get()
 
                 localLog.debug("Settings retrieved. Reviewing all settings...")
                 for setting in defaultSettings:
                     if setting not in gcmSettings:
                         localLog.debug("Setting " + str(setting) + " not present, attempting to add setting to account...")
                         try:
-                            self.dbRoot.child(self.GDBConfig['gdbRoot'] + "/settings/" + setting).update(defaultSettings[setting])
+                            self.dbRoot.child(gcmPath + "/settings/" + setting).update(defaultSettings[setting])
                             self.log.info("Setting " + setting + " added to Greger Client Module account!")
                         except Exception as e:
                             self.log.error("Oops! Failed to write " + str(setting) + " to account! - " + str(e))
@@ -164,19 +162,21 @@ class GDB(object):
 
         # Does settings exist?
         localLog.debug("Checking the existense of the /about child on the server account...")
-        if self.dbRoot.child(self.GDBConfig['gdbRoot'] + "/about").get(shallow=True) is None:
+        if self.dbRoot.child(gcmPath + "/about").get(shallow=True) is None:
             localLog.debug("Child missing!")
             localLog.debug("Attempting to add about using default...")
             try:
-                self.dbRoot.child(self.GDBConfig['gdbRoot'] + "/about").update(self.dbRoot.child(CLIENTS_ROOT + "/default/about").get())
+                self.dbRoot.child(gcmPath + "/about").update(self.dbRoot.child(defaultPath + "/about").get())
                 self.log.info("About successfully added to Greger Client Module Account from default!")
             except Exception as e:
                 self.log.error("Oops! Failed to add /about to Greger Client Module Account on server! - " + str(e))
 
         # Update client root reference
         localLog.debug("Attempting to get db reference to GCM account...")
-        self.dbGCMRoot = db.reference(self.GDBConfig['gdbRoot'])
+        self.dbGCMRoot = db.reference(gcmPath)
         localLog.debug("GCM account review complete!")
+
+        self._accountReviewedOK = True
 
     def getSettings(self):
         '''
@@ -185,10 +185,13 @@ class GDB(object):
         localLog = logging.getLogger(self.logPath + ".getSettings")
 
         # Ensure CLient Module has an account and settings
-        localLog.debug("Ensuring GCM has an account with settings.")
-        if self.dbRoot.child(self.GDBConfig['gdbRoot']).get(shallow=True) is None:
-            if self.dbRoot.child(self.GDBConfig['gdbRoot'] + "/settings").get(shallow=True) is None:
-                self._setupAccount()
+        localLog.debug("Ensuring GCM has a reviewed account...")
+        if not self._accountReviewedOK:
+            localLog.debug("GCM not reviewed...")
+            localLog.debug("Attempting to (re-)setup account for " + gcmName + "...")
+            self._setupAccount()
+        else:
+            localLog.debug("GCM account OK!")
 
         # Get new settings
         localLog.debug("Attempting to retrieve new/updated settings...")
@@ -198,13 +201,15 @@ class GDB(object):
             localLog.debug("Settings successfully retrieved!")
         except Exception as e:
             self.log.error("Oops! Failed to retrieve settings. - " + str(e))
+            localLog.debug("Attempting to re-setup account for " + gcmName + "...")
+            self._setupAccount()
 
         # Checking settings for updates...
+        localLog.debug("Checking settings...")
         if oldSettings == self.settings:
             self.log.info("No new settings detected!")
         else:
             self.log.info("New/updated settings detected!")
-            localLog.debug("Checking settings for updates...")
             for setting in sorted(self.settings):
                 if setting in oldSettings:
                     if oldSettings[setting] != self.settings[setting]:
@@ -219,8 +224,13 @@ class GDB(object):
                     self.log.info("New setting: " +
                         self.settings[setting]['name'] + " = " +
                         str(self.settings[setting]['value']))
+            localLog.debug("All settings checked!")
 
         localLog.debug("Settings retrieved successfully!")
+
+        # Update log level
+        setLogLevel(self.settings['logLevel']['value'])
+
         return self.settings
 
     def getAbout(self):
@@ -230,42 +240,46 @@ class GDB(object):
         localLog = logging.getLogger(self.logPath + ".getAbout")
 
         # Ensure CLient Module has an account and settings
-        localLog.debug("Ensuring GCM has an account with about.")
-        if self.dbRoot.child(self.GDBConfig['gdbRoot']).get(shallow=True) is None:
-            if self.dbRoot.child(self.GDBConfig['gdbRoot'] + "/about").get(shallow=True) is None:
-                self._setupAccount()
+        localLog.debug("Ensuring GCM has a reviewed account...")
+        if not self._accountReviewedOK:
+            localLog.debug("GCM not reviewed...")
+            localLog.debug("Attempting to (re-)setup account for " + gcmName + "...")
+            self._setupAccount()
+        else:
+            localLog.debug("GCM account OK!")
 
         # Get new settings
-        localLog.debug("Attempting to retrieve new/updated about...")
+        localLog.debug("Attempting to retrieve new/updated \"about\"...")
         oldAbout = self.about.copy()
         try:
             self.about = self.dbGCMRoot.child("about").get()
-            localLog.debug("About successfully retrieved!")
+            localLog.debug("\"About\" successfully retrieved!")
         except Exception as e:
-            self.log.error("Oops! Failed to retrieve settings. - " + str(e))
+            self.log.error("Oops! Failed to retrieve \"about\". - " + str(e))
 
         # Checking about for updates...
+        localLog.debug("Checking \"about\" for updates...")
         if oldAbout == self.about:
-            self.log.info("No new about detected!")
+            self.log.info("No new \"about\" detected!")
         else:
-            self.log.info("New/updated about detected!")
-            localLog.debug("Checking about for updates...")
-            for child in sorted(self.about):
-                if child in oldAbout:
-                    if oldAbout[child] != self.about[child]:
+            self.log.info("New/updated \"about\" detected!")
+            for parameter in sorted(self.about):
+                if parameter in oldAbout:
+                    if oldAbout[parameter] != self.about[parameter]:
                         self.log.info("Changed: " +
-                            self.about[child]['name'] + " = " +
-                            str(self.about[child]['value']))
+                            self.about[parameter]['name'] + " = " +
+                            str(self.about[parameter]['value']))
                 elif oldAbout == {}:
                     self.log.info("About: " +
-                        self.about[child]['name'] + " = " +
-                        str(self.about[child]['value']))
+                        self.about[parameter]['name'] + " = " +
+                        str(self.about[parameter]['value']))
                 else:
                     self.log.info("New: " +
-                        self.about[child]['name'] + " = " +
-                        str(self.about[child]['value']))
+                        self.about[parameter]['name'] + " = " +
+                        str(self.about[parameter]['value']))
+            localLog.debug("All \"about\" parameters checked!")
 
-        localLog.debug("About retrieved successfully!")
+        localLog.debug("All \"about\" parameters retrieved successfully!")
 
         return self.about
 
