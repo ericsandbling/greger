@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
-Greger Client Module - RPi client for publishing 1-wire data to Google Firebase.
+Greger Client Module - RPi client for publishing 1-wire data to Greger Database
+(GDB).
 """
 
 __author__ = "Eric Sandbling"
@@ -18,6 +19,7 @@ import ConfigParser
 # Custom libraries
 import bin.owlib as owlib
 import bin.gdb as gdb
+import bin.gua as gua
 from bin.cfg import getLocalConfig
 
 class GCM(object):
@@ -32,7 +34,7 @@ class GCM(object):
         self.logPath = "root.GCM"
         self.log = logging.getLogger(self.logPath)
         localLog = logging.getLogger(self.logPath + ".__init__")
-        localLog.debug("Starting Greger Client Module...")
+        localLog.debug("Initiating Greger Client Module...")
 
         # Get Command Line Arguments
         localLog.debug("Getting command line arguments...")
@@ -47,21 +49,26 @@ class GCM(object):
         config = getLocalConfig()
 
         # Initiate firebase connection and get settings from server
-        localLog.debug("Initiating Greger Database connection...")
-        self.gdbConnection = gdb.GDB()
+        localLog.debug("Attempting to initiate Greger Database connection...")
+        self.gdbConnection = gdb.GregerDatabase()
         self.settings = self.gdbConnection.settings
         self.about = self.gdbConnection.about
-        # setLogLevel(self.settings['logLevel']['value'], 'root')
+
+        # Initialize Greger Update Agent
+        localLog.debug("Attempting to initiate Greger Update Agent (GUA)...")
+        self.UpdateAgent = gua.UpdateAgent(self.settings)
+        self.UpdateAgent.start()
 
         # Init OW devices and update settings
-        localLog.debug("Initiating 1-Wire Server connection...")
+        localLog.debug("Attempting to initiate 1-Wire Server connection...")
         self.owDevices = owlib.owDevices(self.settings)
 
         # Start execution timer
-        localLog.debug("Initiating Execution Timer...")
+        localLog.debug("Attempting to initiate Execution Timer...")
         self._startExecution()
 
         # Start main loop
+        localLog.debug("Greger Client Module initiated successfully!")
         localLog.debug("Initiating Main...")
         self.main()
 
@@ -104,7 +111,7 @@ class GCM(object):
         '''
         # Log
         localLog = logging.getLogger(self.logPath + "._startExecution")
-        localLog.debug("Attempting to start Execution Timer...")
+        localLog.debug("Initiating Execution Timer...")
 
         # Execution Timer parameters
         self.execute = True
@@ -127,11 +134,20 @@ class GCM(object):
         '''
         # Log
         localLog = logging.getLogger(self.logPath + "._stopExecution")
-        localLog.debug("Attempting to stop execution...")
+        localLog.debug("Attempting to stop all execution...")
 
+        # Set stop flag for main method
         self.execute = False
         self.stopTime = time.time()
         self.log.info("End Execution Timer hit, main loop execution flag set to False.")
+
+        # Stop Greger Update Agent
+        localLog.debug("Attempting to stop Greger Update Agent...")
+        try:
+            self.UpdateAgent.stopExecution.set()
+        except Exception as e:
+            localLog.error("Oops! Failed to stop Greger Update Agent - " + str(e))
+
 
     def _updateSettings(self):
         '''
@@ -143,6 +159,7 @@ class GCM(object):
 
         # Retrieve updated settings from database
         localLog.debug("Retrieving updated settings from database...")
+        oldSettings = self.settings.copy()
         try:
             # Get updated settings
             self.settings = self.gdbConnection.getSettings()
@@ -150,14 +167,26 @@ class GCM(object):
         except Exception as e:
             self.log.warning("Oops! Failed to get data! - " + str(e))
 
-        # Check if execution is paused
-        localLog.debug("Checking if execution is pasued from database...")
-        if self.settings['deviceReadingsEnable']['value']:
-            self.pauseExecution = False
-            localLog.debug("Execution is paused!")
+        if oldSettings != self.settings:
+            # Check if execution is paused
+            localLog.debug("Checking if execution is pasued from database...")
+            if self.settings['deviceReadingsEnable']['value']:
+                self.pauseExecution = False
+                localLog.debug("Execution is paused!")
+            else:
+                self.pauseExecution = True
+                localLog.debug("Execution is not paused.")
+
+            # Update Greger Update Agent settings
+            localLog.debug("Updating new/changed GUA settings...")
+            self.UpdateAgent.settings = self.settings
+
+            # Update owDevices settings
+            localLog.debug("Updating new/changed owDevices settings...")
+            self.owDevices.settings = self.settings
+
         else:
-            self.pauseExecution = True
-            localLog.debug("Execution is not paused.")
+            localLog.debug("No new settings detected!")
 
     def main(self):
         '''
@@ -171,10 +200,6 @@ class GCM(object):
         while self.execute:
             # Update new/modified settings
             self._updateSettings()
-
-            # Update owDevices settings
-            localLog.debug("Updating new/changed 1-Wire Server settings...")
-            self.owDevices.settings = self.settings
 
             # Check if execution is paused
             if self.pauseExecution:
