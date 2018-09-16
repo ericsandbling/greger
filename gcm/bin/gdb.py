@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
-fblib - Library for Firebase database.
-
-Library of functions adapted for the Greger Client Module (GCM).
+Greger Database (GDB) - Class module for GDB, representing the interface
+to Greger Client Module (GCM).
 """
 
 __author__ = "Eric Sandbling"
@@ -24,7 +23,7 @@ from firebase_admin import db
 from cfg import getLocalConfig
 from cfg import setLogLevel
 
-class GDB(object):
+class GregerDatabase(object):
     '''
     Class representing all Greger (Firebase RealTime) DataBase (GDB) actions
     available to the Greger Client Module (GCM).
@@ -52,6 +51,7 @@ class GDB(object):
         Initiate Firebase Admin SDK connection and obtain Realtime Database
         reference (root)
         '''
+        # Logging
         localLog = logging.getLogger(self.logPath + "._initConnection")
 
         # Get Local Configuration Parameters
