@@ -45,6 +45,7 @@ class GregerDatabase(object):
 
         # Initialize Firebase connection
         self._initConnection()
+        self.log.info("Greger Database initiated successfully!")
 
     def _initConnection(self):
         '''
