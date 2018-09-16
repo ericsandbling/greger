@@ -10,21 +10,15 @@ __license__ = 'MIT'
 __status__ = 'Development'
 
 import os, sys, argparse
-from os import listdir
-from os.path import isfile, join
 import time
 from threading import Timer
 import logging
-
-# Layout and formating libraries
 import ConfigParser
-
-# Project specific libraries
-# import ow
 
 # Custom libraries
 import bin.owlib as owlib
-import bin.fblib as fblib
+import bin.gdb as gdb
+from bin.cfg import getLocalConfig
 
 class GCM(object):
     """
@@ -37,51 +31,38 @@ class GCM(object):
         # Setup logging
         self.logPath = "root.GCM"
         self.log = logging.getLogger(self.logPath)
-        self.log.info("==== STARTING Greger Client Module ===")
+        localLog = logging.getLogger(self.logPath + ".__init__")
+        localLog.debug("Starting Greger Client Module...")
 
         # Get Command Line Arguments
-        self.log.debug("Getting commandline arguments...")
+        localLog.debug("Getting command line arguments...")
         self._getCommandLineArguments()
 
         # Get variables for self
         self._location = os.path.abspath(__file__)
         self._location = self._location[:-11]        # Trim __main__.py from path
 
-        # Get configuration parameters
-        self.log.debug("Getting configuration parameters from file...")
-        self.config = ConfigParser.RawConfigParser()
-        cfgPath = "/etc/gcm/config"
-        cfgFiles = [join(cfgPath,cfgFile) for cfgFile in listdir(cfgPath) if isfile(join(cfgPath,cfgFile))]
-        cfgFilesRead = self.config.read(cfgFiles)
-        for file in cfgFilesRead:
-            self.log.info("Loaded configuration file from: " + str(file))
+        # Get configuration parameters from file
+        localLog.debug("Getting configuration parameters from file...")
+        config = getLocalConfig()
 
-        # Initiate firebase connection
-        self.log.debug("Initiating Firebase Realtime Database connection...")
-        self.firebaseConnection = fblib.GDB(self.config, self._location)
-
-        # Get initial settings from database
-        self.log.debug("Getting initial settings from database...")
-        self._updateSettings()
+        # Initiate firebase connection and get settings from server
+        localLog.debug("Initiating Greger Database connection...")
+        self.gdbConnection = gdb.GDB()
+        self.settings = self.gdbConnection.settings
+        self.about = self.gdbConnection.about
+        # setLogLevel(self.settings['logLevel']['value'], 'root')
 
         # Init OW devices and update settings
-        self.log.debug("Initiating 1-Wire Server connection...")
+        localLog.debug("Initiating 1-Wire Server connection...")
         self.owDevices = owlib.owDevices(self.settings)
 
         # Start execution timer
-        self.log.debug("Initiating End Execution Timer...")
-        self.execute = True
-        self.stopTime = 0
-        self.pauseExecution = False
-        if self.runTime != 0:
-            self._executionTimer = Timer(float(self.runTime), self._stop)
-            self._executionTimer.start()
-            self.log.info("End Execution Timer started with runTime: " + str(self.runTime) + " second(s).")
-        else:
-            self.log.info("End Execution Timer disabled! (infinite run time enabled)")
+        localLog.debug("Initiating Execution Timer...")
+        self._startExecution()
 
         # Start main loop
-        self.log.debug("Attempting to start main...")
+        localLog.debug("Initiating Main...")
         self.main()
 
     def whereami(self):
@@ -117,10 +98,37 @@ class GCM(object):
         infoMsg += "-rt: " +  str(self.args.runTime) + " "
         self.log.info(infoMsg)
 
-    def _stop(self):
+    def _startExecution(self):
+        '''
+        Start execution timer.
+        '''
+        # Log
+        localLog = logging.getLogger(self.logPath + "._startExecution")
+        localLog.debug("Attempting to start Execution Timer...")
+
+        # Execution Timer parameters
+        self.execute = True
+        self.stopTime = 0
+        self.pauseExecution = False
+
+        # Start Execution Timer
+        if self.runTime != 0:
+            self._executionTimer = Timer(float(self.runTime), self._stopExecution)
+            self._executionTimer.start()
+            localLog.debug("Execution Timer started successfully!")
+            self.log.info("End Execution Timer started with runTime: " + str(self.runTime) + " second(s).")
+        else:
+            localLog.debug("Execution Timer disabled! runTime=" + self.runTime)
+            self.log.info("End Execution Timer disabled! (infinite run time enabled)")
+
+    def _stopExecution(self):
         '''
         Set flags to stop execution
         '''
+        # Log
+        localLog = logging.getLogger(self.logPath + "._stopExecution")
+        localLog.debug("Attempting to stop execution...")
+
         self.execute = False
         self.stopTime = time.time()
         self.log.info("End Execution Timer hit, main loop execution flag set to False.")
@@ -137,31 +145,10 @@ class GCM(object):
         localLog.debug("Retrieving updated settings from database...")
         try:
             # Get updated settings
-            self.settings = self.firebaseConnection.getSettings()
+            self.settings = self.gdbConnection.getSettings()
             localLog.debug("New/modified settings successfully retrieved from database.")
         except Exception as e:
             self.log.warning("Oops! Failed to get data! - " + str(e))
-
-        # Update log settings
-        if self.settings['logLevel']['value'] <= 1:
-            logging.getLogger("root").setLevel(logging.DEBUG)
-            # logger.setLevel(logging.DEBUG)
-        elif self.settings['logLevel']['value'] == 2:
-            logging.getLogger("root").setLevel(logging.INFO)
-            # logger.setLevel(logging.INFO)
-        elif self.settings['logLevel']['value'] == 3:
-            logging.getLogger("root").setLevel(logging.WARNING)
-            # logger.setLevel(logging.WARNING)
-        elif self.settings['logLevel']['value'] == 4:
-            logging.getLogger("root").setLevel(logging.ERROR)
-            # logger.setLevel(logging.ERROR)
-        elif self.settings['logLevel']['value'] == 5:
-            logging.getLogger("root").setLevel(logging.CRITICAL)
-            # logger.setLevel(logging.CRITICAL)
-        else:
-            logging.getLogger("root").setLevel(logging.DEBUG)
-            # logger.setLevel(logging.DEBUG)
-            localLog.debug("Could not determin log level! - " + str(self.settings['logLevel']['value']))
 
         # Check if execution is paused
         localLog.debug("Checking if execution is pasued from database...")
@@ -203,7 +190,7 @@ class GCM(object):
             # Publish current to firebase
             localLog.debug("Attempting to publish current 1-Wire Device reading to database...")
             try:
-                self.firebaseConnection.update('current', owDeviceReading)
+                self.gdbConnection.update('current', owDeviceReading)
                 self.log.info("Current 1-Wire Device reading published to Firebse Realtime DataBase.")
             except Exception as e:
                 self.log.warning("Oops! Failed to update data! - " + str(e))
@@ -215,7 +202,7 @@ class GCM(object):
                 for sensor in timeseries[device]:
                     updatePath = 'timeseries/' + device + "/" + sensor
                     try:
-                        self.firebaseConnection.update(updatePath, self.owDevices.timeseries[device][sensor])
+                        self.gdbConnection.update(updatePath, self.owDevices.timeseries[device][sensor])
                         localLog.debug(updatePath + " updated with latest timeseries.")
                     except Exception as e:
                         self.log.warning("Oops! Failed to update data! - " + str(e))
