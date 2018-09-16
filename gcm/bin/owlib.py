@@ -48,7 +48,8 @@ class owDevices(object):
         # Logging
         self.logPath = "root.owDevices"
         self.log = logging.getLogger(self.logPath)
-        self.log.debug("Creating Class Log for 1-Wire Devices (owDevices).")
+        localLog = logging.getLogger(self.logPath + ".__init__")
+        localLog.debug("Starting 1-Wire Devices interface...")
 
         # Input data
         self.settings = settings
@@ -74,11 +75,29 @@ class owDevices(object):
         self.log.info("1-Wire Devices initiated!")
 
     def _initOW(self):
+        '''
+        Initiate 1-Wire server (owServer).
+        '''
+        # Logger
+        localLog = logging.getLogger(self.logPath + "._initOW")
+        localLog.debug("Initiating owServer...")
+
+        # Init owServer at localhost
         ow.init('localhost:4304')
         ow.Sensor('/').useCache(False)
+        localLog.debug("owServer initiated successfully!")
+
         self.deviceList = ow.Sensor('/').sensorList()
+        localLog.debug("Device list updated from owServer.")
 
     def _flushOW(self):
+        '''
+        Flush and stop connection to owServer
+        '''
+        # Logger
+        localLog = logging.getLogger(self.logPath + "._flushOW")
+        localLog.debug("Stoping owServer...")
+
         ow.finish()
 
     def _timeToEmptyBucket(self):
