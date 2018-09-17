@@ -17,12 +17,12 @@ import logging
 import ConfigParser
 
 # Custom libraries
-import bin.owlib as owlib
+from bin.owd import owDevices
 import bin.gdb as gdb
 import bin.gua as gua
-from bin.cfg import getLocalConfig
+from bin.common import getLocalConfig
 
-class GCM(object):
+class GregerClientModule(object):
     """
     Main class which holds the main sequence of the application.
     """
@@ -44,24 +44,21 @@ class GCM(object):
         self._location = os.path.abspath(__file__)
         self._location = self._location[:-11]        # Trim __main__.py from path
 
-        # Get configuration parameters from file
-        localLog.debug("Getting configuration parameters from file...")
-        config = getLocalConfig()
-
         # Initiate firebase connection and get settings from server
-        localLog.debug("Attempting to initiate Greger Database connection...")
-        self.gdbConnection = gdb.GregerDatabase()
-        self.settings = self.gdbConnection.settings
-        self.about = self.gdbConnection.about
+        localLog.debug("Attempting to initiate Greger Database (GDB)...")
+        self.GregerDatabase = gdb.GregerDatabase()
+        localLog.debug("Attempting to start Greger Database (GDB)...")
+        self.GregerDatabase.start()
 
         # Initialize Greger Update Agent
         localLog.debug("Attempting to initiate Greger Update Agent (GUA)...")
-        self.UpdateAgent = gua.UpdateAgent(self.settings)
-        self.UpdateAgent.start()
+        self.GregerUpdateAgent = gua.GregerUpdateAgent()
+        localLog.debug("Attempting to start Greger Update Agent (GUA)...")
+        self.GregerUpdateAgent.start()
 
-        # Init OW devices and update settings
+        # Init owDevices and update settings
         localLog.debug("Attempting to initiate 1-Wire Server connection...")
-        self.owDevices = owlib.owDevices(self.settings)
+        self.owDevices = owDevices()
 
         # Start execution timer
         localLog.debug("Attempting to initiate Execution Timer...")
@@ -141,10 +138,17 @@ class GCM(object):
         self.stopTime = time.time()
         self.log.info("End Execution Timer hit, main loop execution flag set to False.")
 
-        # Stop Greger Update Agent
-        localLog.debug("Attempting to stop Greger Update Agent...")
+        # Stop Greger Update Agent (GUA)
+        localLog.debug("Attempting to stop Greger Update Agent (GUA)...")
         try:
-            self.UpdateAgent.stopExecution.set()
+            self.GregerUpdateAgent.stopExecution.set()
+        except Exception as e:
+            localLog.error("Oops! Failed to stop Greger Update Agent - " + str(e))
+
+        # Stop Greger Database (GDB)
+        localLog.debug("Attempting to stop Greger Database (GDB)...")
+        try:
+            self.GregerDatabase.stopExecution.set()
         except Exception as e:
             localLog.error("Oops! Failed to stop Greger Update Agent - " + str(e))
 
@@ -162,7 +166,7 @@ class GCM(object):
         oldSettings = self.settings.copy()
         try:
             # Get updated settings
-            self.settings = self.gdbConnection.getSettings()
+            self.settings = self.GregerDatabase.getSettings()
             localLog.debug("New/modified settings successfully retrieved from database.")
         except Exception as e:
             self.log.warning("Oops! Failed to get data! - " + str(e))
@@ -179,7 +183,7 @@ class GCM(object):
 
             # Update Greger Update Agent settings
             localLog.debug("Updating new/changed GUA settings...")
-            self.UpdateAgent.settings = self.settings
+            self.GregerUpdateAgent.settings = self.settings
 
             # Update owDevices settings
             localLog.debug("Updating new/changed owDevices settings...")
@@ -199,10 +203,11 @@ class GCM(object):
         # Main loop
         while self.execute:
             # Update new/modified settings
-            self._updateSettings()
+            # self._updateSettings()
 
             # Check if execution is paused
-            if self.pauseExecution:
+            # if self.pauseExecution:
+            if not self.GregerDatabase.settings['gcmEnableOWD']['value']:
                 time.sleep(5)
                 continue
 
@@ -215,7 +220,7 @@ class GCM(object):
             # Publish current to firebase
             localLog.debug("Attempting to publish current 1-Wire Device reading to database...")
             try:
-                self.gdbConnection.update('current', owDeviceReading)
+                self.GregerDatabase.update('current', owDeviceReading)
                 self.log.info("Current 1-Wire Device reading published to Firebse Realtime DataBase.")
             except Exception as e:
                 self.log.warning("Oops! Failed to update data! - " + str(e))
@@ -227,7 +232,7 @@ class GCM(object):
                 for sensor in timeseries[device]:
                     updatePath = 'timeseries/' + device + "/" + sensor
                     try:
-                        self.gdbConnection.update(updatePath, self.owDevices.timeseries[device][sensor])
+                        self.GregerDatabase.update(updatePath, self.owDevices.timeseries[device][sensor])
                         localLog.debug(updatePath + " updated with latest timeseries.")
                     except Exception as e:
                         self.log.warning("Oops! Failed to update data! - " + str(e))

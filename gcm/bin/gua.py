@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Greger Update Agent module for the Greger Client Module
+Greger Update Agent (GUA) module for the Greger Client Module
 """
 
 __author__ = "Eric Sandbling"
@@ -17,13 +17,15 @@ from threading import Event
 from threading import Thread
 
 # Local Modules
-from cfg import getLocalConfig
+from common import getLocalConfig
+from gdb import GregerDatabase as greger
 
-class UpdateAgent(Thread):
+class GregerUpdateAgent(Thread):
     """
     Main class which holds the main sequence of the application.
     """
-    def __init__(self, settings):
+
+    def __init__(self):
         '''
         Initialize the main class
         '''
@@ -35,9 +37,6 @@ class UpdateAgent(Thread):
         localLog = logging.getLogger(self.logPath + ".__init__")
         localLog.debug("Initiating Greger Update Agent...")
 
-        # Get setting
-        self.settings = settings
-
         # Stop execution handler
         self.stopExecution = Event()
 
@@ -47,7 +46,6 @@ class UpdateAgent(Thread):
         localLog.debug("Local path: " + self._location)
 
         self.log.info("Greger Update Agent initiated successfully!")
-        # self._main()
 
     def updateLocalRevisionRecord(self, serverRevision):
         '''
@@ -80,7 +78,11 @@ class UpdateAgent(Thread):
         localLog.debug("Attempting to retrieve latest revision stored on the server...")
 
         # Locally relevant parameters
-        guaSWServerURI = self.settings['guaSWSource']['value']
+        if 'guaSWSource' in greger.settings:
+            guaSWServerURI = greger.settings['guaSWSource']['value']
+        else:
+            self.log.warning("Settings not defined!")
+            return
 
         # Get server revision info
         localLog.debug("Attempting to retrieve info from server... " + guaSWServerURI)
@@ -105,11 +107,26 @@ class UpdateAgent(Thread):
         '''
         # Logging
         localLog = logging.getLogger(self.logPath + ".run")
-        localLog.debug("Starting Greger Update Agent main method...")
+        localLog.debug("Start checking for new software...")
 
+        # Start checking for updates
+        loopCount = 0
         while not self.stopExecution.is_set():
+            loopCount += 1
+            localLog.debug("Checking for updates (" + str(loopCount) + ")...")
 
             # Get server revision...
             self.getServerRevision()
 
-            self.stopExecution.wait(self.settings['guaCheckUpdateDelay']['value'])
+            # Get delay time from settings
+            if 'guaCheckUpdateDelay' in greger.settings:
+                delayTime = greger.settings['guaCheckUpdateDelay']['value']
+            else:
+                delayTime = 10
+                self.log.warning("Settings not defined! (using default=10)")
+
+            # Wait update delay
+            localLog.debug("Waiting " + str(delayTime) + "s...")
+            self.stopExecution.wait(delayTime)
+
+        localLog.debug("Greger Update Agent execution stopped!")

@@ -13,6 +13,8 @@ __status__ = 'Development'
 import ow
 import time, sys
 import logging
+from threading import Event
+from threading import Thread
 
 # Firebase Python Admin SDK
 import firebase_admin
@@ -20,28 +22,32 @@ from firebase_admin import credentials
 from firebase_admin import db
 
 # Local Modules
-from cfg import getLocalConfig
-from cfg import setLogLevel
+from common import getLocalConfig
+from common import setLogLevel
 
-class GregerDatabase(object):
+class GregerDatabase(Thread):
     '''
     Class representing all Greger (Firebase RealTime) DataBase (GDB) actions
     available to the Greger Client Module (GCM).
     '''
 
+    settings = {}
+    about = {}
+
     def __init__(self):
         '''
         Initialize class.
         '''
+        Thread.__init__(self)
+
+        # Stop execution handler
+        self.stopExecution = Event()
+
         # Logging
         self.logPath = "root.GDB"
         self.log = logging.getLogger(self.logPath)
         localLog = logging.getLogger(self.logPath + ".__init__")
         localLog.debug("Starting Greger (Firebase RealTime) Database...")
-
-        # Define parameters
-        self.settings = {}
-        self.about = {}
 
         # Initialize Firebase connection
         self._initConnection()
@@ -93,10 +99,10 @@ class GregerDatabase(object):
 
         # Retrieve Settings
         localLog.debug("Attempting to retrieve settings from account...")
-        self.getSettings()
+        self._getSettings()
 
         localLog.debug("Attempting to retrieve about from account...")
-        self.getAbout()
+        self._getAbout()
 
     def _setupAccount(self):
         '''
@@ -179,11 +185,12 @@ class GregerDatabase(object):
 
         self._accountReviewedOK = True
 
-    def getSettings(self):
+    def _getSettings(self):
         '''
         Get GCM settings.
         '''
-        localLog = logging.getLogger(self.logPath + ".getSettings")
+        localLog = logging.getLogger(self.logPath + "._getSettings")
+        self.log.info("Refreshing settings...")
 
         # Ensure CLient Module has an account and settings
         localLog.debug("Ensuring GCM has a reviewed account...")
@@ -198,12 +205,25 @@ class GregerDatabase(object):
         localLog.debug("Attempting to retrieve new/updated settings...")
         oldSettings = self.settings.copy()
         try:
-            self.settings = self.dbGCMRoot.child("settings").get()
+            GregerDatabase.settings = self.dbGCMRoot.child("settings").get()
             localLog.debug("Settings successfully retrieved!")
         except Exception as e:
             self.log.error("Oops! Failed to retrieve settings. - " + str(e))
             localLog.debug("Attempting to re-setup account for " + gcmName + "...")
             self._setupAccount()
+
+        try:
+            if 'logLevel' in oldSettings:
+                if oldSettings['logLevel']['value'] != self.settings['logLevel']['value']:
+                    # Update log level
+                    self.log.info("Updating logging level...")
+                    setLogLevel(self.settings['logLevel']['value'])
+            else:
+                # Update log level
+                self.log.info("Updating logging level...")
+                setLogLevel(self.settings['logLevel']['value'])
+        except:
+            pass
 
         # Checking settings for updates...
         localLog.debug("Checking settings...")
@@ -214,31 +234,32 @@ class GregerDatabase(object):
             for setting in sorted(self.settings):
                 if setting in oldSettings:
                     if oldSettings[setting] != self.settings[setting]:
-                        self.log.info("Changed setting: " +
+                        self.log.info("Changed setting: (" +
+                            self.settings[setting]['moduleID'] + ") " +
                             self.settings[setting]['name'] + " = " +
                             str(self.settings[setting]['value']))
                 elif oldSettings == {}:
-                    self.log.info("Setting detected: " +
+                    self.log.info("Setting detected: (" +
+                        self.settings[setting]['moduleID'] + ") " +
                         self.settings[setting]['name'] + " = " +
                         str(self.settings[setting]['value']))
                 else:
-                    self.log.info("New setting: " +
+                    self.log.info("New setting: (" +
+                        self.settings[setting]['moduleID'] + ") " +
                         self.settings[setting]['name'] + " = " +
                         str(self.settings[setting]['value']))
             localLog.debug("All settings checked!")
 
         localLog.debug("Settings retrieved successfully!")
 
-        # Update log level
-        setLogLevel(self.settings['logLevel']['value'])
-
         return self.settings
 
-    def getAbout(self):
+    def _getAbout(self):
         '''
         Get GCM about.
         '''
-        localLog = logging.getLogger(self.logPath + ".getAbout")
+        localLog = logging.getLogger(self.logPath + "._getAbout")
+        self.log.info("Refreshing about...")
 
         # Ensure CLient Module has an account and settings
         localLog.debug("Ensuring GCM has a reviewed account...")
@@ -253,7 +274,7 @@ class GregerDatabase(object):
         localLog.debug("Attempting to retrieve new/updated \"about\"...")
         oldAbout = self.about.copy()
         try:
-            self.about = self.dbGCMRoot.child("about").get()
+            GregerDatabase.about = self.dbGCMRoot.child("about").get()
             localLog.debug("\"About\" successfully retrieved!")
         except Exception as e:
             self.log.error("Oops! Failed to retrieve \"about\". - " + str(e))
@@ -295,3 +316,27 @@ class GregerDatabase(object):
             self.dbGCMRoot.child(path).update(value)
         except Exception as e:
             self.log.error("Oops! Failed to update child! - " + str(e))
+
+    def run(self):
+        '''
+        Run Greger Database.
+        '''
+        # Logging
+        localLog = logging.getLogger(self.logPath + ".run")
+        localLog.debug("Starting checking for updates to server...")
+
+        # Start checking for updates
+        loopCount = 0
+        while not self.stopExecution.is_set():
+            loopCount += 1
+            localLog.debug("Checking for updates (" + str(loopCount) + ")...")
+
+            # Get server updates...
+            self._getSettings()
+            self._getAbout()
+
+            # Wait update delay
+            localLog.debug("Waiting " + str(self.settings['gdbCheckUpdateDelay']['value']) + "s...")
+            self.stopExecution.wait(self.settings['gdbCheckUpdateDelay']['value'])
+
+        localLog.debug("Greger Database execution stopped!")
