@@ -15,6 +15,9 @@ import ow
 import time, sys
 import logging
 
+# Local Modules
+from gdb import GregerDatabase as greger
+
 # Functions for each sensor type goes here.
 def _ds18b20(sensor,ndigits=1):
     '''Return available sensor values.'''
@@ -41,18 +44,21 @@ class owDevices(object):
     '''
     Class representing all devices on the 1-1wire.
     '''
-    def __init__(self, settings):
+
+
+    # def __init__(self, settings):
+    def __init__(self):
         '''
         Initialize class
         '''
         # Logging
-        self.logPath = "root.owDevices"
+        self.logPath = "root.OWD"
         self.log = logging.getLogger(self.logPath)
         localLog = logging.getLogger(self.logPath + ".__init__")
         localLog.debug("Starting 1-Wire Devices interface...")
 
-        # Input data
-        self.settings = settings
+        # Instance variables
+        self.enableTimeseries = True
 
         # Device readings
         self.deviceReading = {}
@@ -106,28 +112,31 @@ class owDevices(object):
         '''
         localLog = logging.getLogger(self.logPath + "._timeToEmptyBucket")
 
+        # Get local settings
+        bucketType = greger.settings['owdTimeseriesBucketType']['value']
+        bucketSize = greger.settings['owdTimeseriesBucketSize']['value']
+
         # Initialize local variable
         answer = False
         dDay    = time.localtime().tm_wday - time.localtime(self._timeBucketTime).tm_wday
         dHour   = time.localtime().tm_hour - time.localtime(self._timeBucketTime).tm_hour
         dMin    = time.localtime().tm_min - time.localtime(self._timeBucketTime).tm_min
         dSec    = time.localtime().tm_sec - time.localtime(self._timeBucketTime).tm_sec
-        # dt   = 0
-        methodName = "TIMESERIES"
 
         # Evaluate if enough time has passed to empty the bucket
         localLog.debug("Evaluate if enough time has passed to empty the bucket")
-        if str(self.settings['timeseriesBucketType']['value']).lower() == 'h':
-            answer = abs(dDay) > 0 or dHour > int(self.settings['timeseriesBucketSize']['value'])
+        if str(bucketType).lower() == 'h':
+            answer = abs(dDay) > 0 or dHour > int(bucketSize)
 
-        elif str(self.settings['timeseriesBucketType']['value']).lower() == 'm':
-            answer = abs(dDay) > 0 or abs(dHour) > 0 or dMin > int(self.settings['timeseriesBucketSize']['value'])
+        elif str(bucketType).lower() == 'm':
+            answer = abs(dDay) > 0 or abs(dHour) > 0 or dMin > int(bucketSize)
 
-        elif str(self.settings['timeseriesBucketType']['value']).lower() == 's':
-            answer = abs(dDay) > 0 or abs(dHour) > 0 or abs(dMin) > 0 or dSec > int(self.settings['timeseriesBucketSize']['value'])
+        elif str(bucketType).lower() == 's':
+            answer = abs(dDay) > 0 or abs(dHour) > 0 or abs(dMin) > 0 or dSec > int(bucketSize)
 
         else:
-            self._disableTimeseries()
+            self.log.error("Timeseries Bucket type could not be determined! - " +
+                str(bucketType))
 
         # Reset timeBucket empty time if first reading ever
         if self._timeBucketEmptyTime == 0:
@@ -137,7 +146,7 @@ class owDevices(object):
         self.log.info(
             "Time to empty bucket: " + str(answer).upper() +
             " (empty@" + time.strftime("%H:%M:%S",time.localtime(self._timeBucketEmptyTime)) +
-            " (+" + str(int(self.settings['timeseriesBucketSize']['value'])) + str(self.settings['timeseriesBucketType']['value']) + ")" +
+            " (+" + str(bucketSize) + str(bucketType) + ")" +
             " dDay=" + str(dDay) +
             " dHour=" + str(dHour) +
             " dMin=" + str(dMin) +
@@ -146,21 +155,14 @@ class owDevices(object):
 
         return answer
 
-    def _disableTimeseries(self):
-        '''
-        Disable time-series collection.
-        '''
-        self.log.info("Timeseries Bucket type could not be determined! - " +
-            str(self.settings['timeseriesBucketType']['value']))
-
-        self.log.info("Turing off timeseries!!")
-        self.settings['timeseriesEnable']['value'] = False
-
     def _emptyBucket(self):
         '''
         Empty timeseries timeBucket.
         '''
         localLog = logging.getLogger(self.logPath + "._emptyBucket")
+
+        # Get settings from server
+        sensorResolution = greger.settings['owdSensorResolution']['value']
 
         # Empty each device in bucket to timeseries
         for deviceId in self._timeBucket:
@@ -180,7 +182,7 @@ class owDevices(object):
                 sensorMax = max(sensorValues)
                 sensorMin = min(sensorValues)
                 sensorMean = float(sum(sensorValues)) / max(len(sensorValues), 1)
-                sensorMean = round(sensorMean, int(self.settings['sensorResolution']['value']))
+                sensorMean = round(sensorMean, int(sensorResolution))
 
                 # Update consol message
                 if not firstSensor:
@@ -219,6 +221,10 @@ class owDevices(object):
         '''
         localLog = logging.getLogger(self.logPath + "._setBucketTime")
 
+        # Get settings
+        bucketType = greger.settings['owdTimeseriesBucketType']['value']
+        bucketSize = greger.settings['owdTimeseriesBucketSize']['value']
+
         # Get current time as a list
         timeStruct = [
             time.localtime().tm_year,      # 0 : (for example, 1993)
@@ -234,45 +240,47 @@ class owDevices(object):
 
         # Reset timeStruct to match timeBucket
         bucketSizeOutOfBounds = False
-        if str(self.settings['timeseriesBucketType']['value']).lower() == 'h':
+        if str(bucketType).lower() == 'h':
             # Is bucket size within bounds
-            if int(self.settings['timeseriesBucketSize']['value']) > 23:
-                self.settings['timeseriesBucketSize']['value'] = 23
+            if int(bucketSize) > 23:
+                bucketSize = 23
                 bucketSizeOutOfBounds = True
 
             # Set hour to start of timeBucket and min/sec to zero
-            timeStruct[3] -= timeStruct[3] % timeBucketSize
+            timeStruct[3] -= timeStruct[3] % bucketSize
             timeStruct[4] = 0
             timeStruct[5] = 0
 
-        elif str(self.settings['timeseriesBucketType']['value']).lower() == 'm':
+        elif str(bucketType).lower() == 'm':
             # Is bucket size within bounds
-            if int(self.settings['timeseriesBucketSize']['value']) > 59:
-                self.settings['timeseriesBucketSize']['value'] = 59
+            if int(bucketSize) > 59:
+                bucketSize = 59
                 bucketSizeOutOfBounds = True
 
             # Set minutes to start of timeBucket and sec to zero
-            timeStruct[4] -= timeStruct[4] % int(self.settings['timeseriesBucketSize']['value'])
+            timeStruct[4] -= timeStruct[4] % int(bucketSize)
             timeStruct[5] = 0
 
-        elif str(self.settings['timeseriesBucketType']['value']).lower() == 's':
+        elif str(bucketType).lower() == 's':
             # Is bucket size within bounds
-            if int(self.settings['timeseriesBucketSize']['value']) > 61:
-                self.settings['timeseriesBucketSize']['value'] = 61
+            if int(bucketSize) > 61:
+                bucketSize = 61
                 bucketSizeOutOfBounds = True
 
             # Set sec to start of timeBucket
-            timeStruct[5] -= timeStruct[5] % int(self.settings['timeseriesBucketSize']['value'])
+            timeStruct[5] -= timeStruct[5] % int(bucketSize)
 
         else:
-            self._disableTimeseries()
+            self.log.error("Timeseries Bucket type could not be determined! - " +
+                str(bucketType))
+            # self._disableTimeseries()
 
         # Get consol message
         if bucketSizeOutOfBounds:
-            selg.log.warning(
+            self.log.warning(
                 "Bucket size out of bounds! - reset to: " +
-                int(self.settings['timeseriesBucketSize']['value']) +
-                self._timeBucketTypeLibrary[self.settings['timeseriesBucketType']['value']])
+                int(bucketSize) +
+                self._timeBucketTypeLibrary[bucketType])
         else:
             # Update time bucket time
             self._timeBucketTime = time.mktime(tuple(timeStruct))
@@ -284,14 +292,18 @@ class owDevices(object):
         '''
         localLog = logging.getLogger(self.logPath + ".readAll")
 
+        # Get local settings
+        enableTimeseries = greger.settings['owdEnableTimeseries']['value']
+        sensorResolution = greger.settings['owdSensorResolution']['value']
+        enableStrftime = greger.settings['owdEnableStrftime']['value']
+
         # Init local variables
         warningMsg = ''
         infoMsg = ''
-        methodName = "OW-SCAN"
 
         # Initialize timeBucket
         localLog.debug("Reviewing Time Bucket..")
-        if bool(self.settings['timeseriesEnable']['value']):
+        if enableTimeseries:
             # Set timeBucket time if timeBucket is empty
             if not self._timeBucket:
                 localLog.debug("Time Bucket is empty, setting new time.")
@@ -324,7 +336,7 @@ class owDevices(object):
                 owDevice.useCache(False)
 
                 # Get device and sensor data from OW
-                newSensorData = self.getSensor(owDevice, ndigits=int(self.settings['sensorResolution']['value']))
+                newSensorData = self.getSensor(owDevice, ndigits=int(sensorResolution))
 
                 # Get time
                 t = time.time()
@@ -345,7 +357,7 @@ class owDevices(object):
                         }
 
                     # Add formated time (optional)
-                    if self.settings['strftime']['value']:
+                    if enableStrftime:
                         newDeviceReading[owDevice.id].update({
                             'strftime': sft})
 
@@ -356,13 +368,13 @@ class owDevices(object):
                     infoMsg += " - NEW ("
 
                     # Add device to timeBucket
-                    if self.settings['timeseriesEnable']['value']:
+                    if enableTimeseries:
                         self._timeBucket.update({owDevice.id: { } })
 
                     # Check all device sensors
                     firstSensor = True
                     for sensor in newSensorData:
-                        if self.settings['timeseriesEnable']['value']:
+                        if enableTimeseries:
                             # Add to timeBucket (timeseries)
                             self._timeBucket[owDevice.id].update({sensor : {
                                     str(t): newSensorData[sensor]
@@ -395,7 +407,7 @@ class owDevices(object):
                     for sensor in newSensorData:
                         # New value available?
                         if newSensorData[sensor] != oldSensorData[sensor]:
-                            if self.settings['timeseriesEnable']['value']:
+                            if enableTimeseries:
                                 # Update timeBucket (timeseries)
                                 if owDevice.id not in self._timeBucket:
                                     self._timeBucket.update({owDevice.id:{}})
@@ -409,7 +421,7 @@ class owDevices(object):
                             # Update sensor reading time
                             newDeviceReading[owDevice.id].update({
                                 'lastModified': t})
-                            if self.settings['strftime']['value']:
+                            if enableStrftime:
                                 newDeviceReading[owDevice.id].update({
                                     'strftime': sft})
 
