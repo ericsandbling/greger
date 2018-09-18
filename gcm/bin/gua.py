@@ -25,6 +25,8 @@ class GregerUpdateAgent(Thread):
     Main class which holds the main sequence of the application.
     """
 
+    is_active = False
+
     def __init__(self):
         '''
         Initialize the main class
@@ -35,7 +37,7 @@ class GregerUpdateAgent(Thread):
         self.logPath = "root.GUA"
         self.log = logging.getLogger(self.logPath)
         localLog = logging.getLogger(self.logPath + ".__init__")
-        localLog.debug("Initiating Greger Update Agent...")
+        localLog.debug("Initiating Greger Update Agent (GUA)...")
 
         # Stop execution handler
         self.stopExecution = Event()
@@ -45,37 +47,56 @@ class GregerUpdateAgent(Thread):
         self._location = self._location[:-15] # Trim gcm/__main__.py from path to get at location of application
         localLog.debug("Local path: " + self._location)
 
-        self.log.info("Greger Update Agent initiated successfully!")
+        self.log.info("Greger Update Agent (GUA) successfully initiated!")
 
-    def updateLocalRevisionRecord(self, newRevision):
+    @property
+    def localRevisionRecord(self):
         '''
-        Update local revision record (.gcm)
+        Get local revision record (.gcm)
         '''
         # Logging
-        localLog = logging.getLogger(self.logPath + ".updateLocalRevisionRecord")
-        localLog.debug("Updating local revision record (.gcm)...")
+        localLog = logging.getLogger(self.logPath + ".localRevisionRecord")
+        localLog.debug("Getting local revision record (.gcm)...")
 
         # Local parameters
-        revisionRecord = self._location + "/.gcm"
+        revisionRecordPath = self._location + "/.gcm"
 
-        localLog.debug("Attemption to write \"" + str(newRevision) + "\" to file...")
-        with open(revisionRecord,"w") as f:
-            f.write(str(newRevision))
-        localLog.debug("Revision record updated!")
+        localLog.debug("Attemption to get record from file...")
+        try:
+            with open(revisionRecordPath,"r") as f:
+                localRecord = f.read()
+                localLog.debug("Local revision record: " + str(localRecord))
+        except Exception as e:
+            self.log.warning("Failed to open file! - " + str(e))
+            self.localRevisionRecord = 0
+            localRecord = self.localRevisionRecord
 
-        with open(revisionRecord,"r") as f:
-            localRevision = f.read()
-        localLog.debug("Local Revision: " + str(localRevision))
+        return localRecord
 
-        return localRevision
-
-    def getLatestSoftwareRevision(self):
+    @localRevisionRecord.setter
+    def localRevisionRecord(self, newRevision):
         '''
-        Retrieve latest revision available on server.
+        Set local revision record (.gcm)
         '''
         # Logging
-        localLog = logging.getLogger(self.logPath + ".getLatestSoftwareRevision")
-        localLog.debug("Attempting to retrieve latest revision stored on the server...")
+        localLog = logging.getLogger(self.logPath + ".localRevisionRecord")
+        localLog.debug("Setting local revision record (.gcm)...")
+
+        # Local parameters
+        revisionRecordPath = self._location + "/.gcm"
+
+        localLog.debug("Attemption to write \"" + str(newRevision) + "\" to file...")
+        with open(revisionRecordPath,"w") as f:
+            f.write(str(newRevision))
+        self.log.info("Local revision record set: " + str(newRevision))
+
+    def getSoftwareInfo(self, rev='HEAD'):
+        '''
+        Retrieve information about a revision available on server.
+        '''
+        # Logging
+        localLog = logging.getLogger(self.logPath + ".getSoftwareInfo")
+        localLog.debug("Attempting to retrieve software revision info...")
 
         # Locally relevant parameters
         if 'guaSWSource' in greger.settings:
@@ -83,33 +104,73 @@ class GregerUpdateAgent(Thread):
         else:
             self.log.warning("Setting " + str(guaSWSource) + " not defined!")
             return
+        moduleReturn = {
+            'revision': "",
+            'revision_SHA' : "",
+            'revision_author' : "",
+            'revision_date' : "",
+            'revision_comment' : ""
+            }
 
         # Get server revision info
         localLog.debug("Attempting to retrieve info from server... " + guaSWServerURI)
+        pCmd  =       "svn proplist -v -R --revprop -r " + rev
+        pCmd += " " + guaSWServerURI
+        localLog.debug(pCmd)
         try:
-            p = subprocess.Popen(
-                "svn info " + guaSWServerURI + " | grep \"Last Changed Rev\" | awk '{print $4}'",
-                stdout=subprocess.PIPE,
-                shell=True)
-            (serverRevision, err) = p.communicate()
-            serverRevision = int(serverRevision)
-            localLog.debug("Server revision = " + str(serverRevision))
+            p = subprocess.Popen(pCmd, stdout=subprocess.PIPE, shell=True)
+            (output, err) = p.communicate()
+
+            # Create list of output and remove extra white spaces
+            outputList = output.splitlines()[1:]
+            outputList = [elem.strip() for elem in outputList]
+
+            # Get revision from output
+            revStr = output.splitlines()[0]
+            revStr = revStr.split()[-1]
+            moduleReturn['revision'] = revStr[:-1]
+            localLog.debug("Revision: " + revStr[:-1])
+
+            # Get SHA
+            shaStr = outputList[outputList.index('git-commit')+1]
+            moduleReturn['revision_SHA'] = shaStr
+            localLog.debug("Revision SHA: " + shaStr)
+
+            # Get revision author
+            authorStr = outputList[outputList.index('svn:author')+1]
+            moduleReturn['revision_author'] = authorStr
+            localLog.debug("Revision author: " + authorStr)
+
+            # Get revision date
+            dateStr = outputList[outputList.index('svn:date')+1]
+            moduleReturn['revision_date'] = dateStr
+            localLog.debug("Revision date: " + dateStr)
+
+            # Get revision comment
+            commentStr = outputList[outputList.index('svn:log')+1].strip()
+            moduleReturn['revision_comment'] = commentStr
+            localLog.debug("Revision Comment: " + commentStr)
+
             if err is not None:
                 localLog.debug("Error message: " + str(err))
+
         except Exception as e:
             self.log.error("Oops! Something went wrong - " + str(e))
 
-        self.localRevision = self.updateLocalRevisionRecord(serverRevision)
+        return moduleReturn
 
-    def getSowftware(self,swRev='HEAD'):
+    def getSoftware(self,swRev='HEAD'):
         '''
         Get software from server
         '''
         # Logging
-        localLog = logging.getLogger(self.logPath + ".getSowftware")
+        localLog = logging.getLogger(self.logPath + ".getSoftware")
         localLog.debug("Getting software revision " + str(swRev) + " from server...")
 
         # Locally relevant parameters
+        targetRoot = self._location
+        targetDir  = "gcm/"
+        targetPath = targetRoot + targetDir
         if 'guaSWSource' in greger.settings:
             guaSWServerURI = greger.settings['guaSWSource']['value']
         else:
@@ -117,18 +178,64 @@ class GregerUpdateAgent(Thread):
             return
 
         # Get software revision
-        svnCmd  = "svn export --force -r " + str(swRev) + " "
-        svnCmd += "https://github.com/ericsandbling/greger/trunk/test "
-        svnCmd += "/home/pi/svntest/"
+        pCmd  =       "svn export --force -r " + str(swRev)
+        pCmd += " " + guaSWServerURI
+        pCmd += " " + targetPath
+        pCmd += " " + '| grep -e "A " -e "U "'    # Filter output to Added an Updeted files
+        pCmd += " " + "| awk '{print $2}'"        # Get files
+        localLog.debug("Getting software files from server...")
         try:
-            p = subprocess.Popen(svnCmd, stdout=subprocess.PIPE, shell=True)
-            (serverRevision, err) = p.communicate()
-            serverRevision = int(serverRevision)
-            localLog.debug("Server revision = " + str(serverRevision))
+            p = subprocess.Popen(pCmd, stdout=subprocess.PIPE, shell=True)
+            (output, err) = p.communicate()
+            exportedFiles = output.splitlines()[1:]
+            exportedFiles = [targetRoot + file for file in exportedFiles]
+
+            self.log.info("Software files downloaded:")
+            for file in exportedFiles:
+                self.log.info("File: " + file)
+
             if err is not None:
                 localLog.debug("Error message: " + str(err))
         except Exception as e:
             self.log.error("Oops! Something went wrong - " + str(e))
+
+        # List files in directory
+        self.log.debug("Getting all files in local directory...")
+        allFiles = []
+        # r=root, d=directories, f = files
+        for r, d, f in os.walk(targetPath):
+            for file in f:
+                allFiles.append(os.path.join(r, file))
+            for dir in d:
+                allFiles.append(os.path.join(r, dir))
+        self.log.debug("Files in directory:")
+        for file in allFiles:
+            self.log.debug("File: " + file)
+
+        self.log.info("Identifying old files to remove...")
+        diffFiles = list(set(allFiles) - set(exportedFiles))
+        for file in diffFiles:
+            self.log.info("Removing: " + file)
+            try:
+                if os.path.isfile(file):
+                    os.unlink(file)
+                elif os.path.isdir(file):
+                    shutil.rmtree(file)
+            except Exception as e:
+                self.log.warning("Oops! Something went wrong! - " + str(e))
+
+        # List files in directory
+        self.log.debug("Re-getting all files in local directory...")
+        allFiles = []
+        # r=root, d=directories, f = files
+        for r, d, f in os.walk(targetPath):
+            for file in f:
+                allFiles.append(os.path.join(r, file))
+            for dir in d:
+                allFiles.append(os.path.join(r, dir))
+        self.log.debug("Files in directory:")
+        for file in allFiles:
+            self.log.debug("File: " + file)
 
     def run(self):
         '''
@@ -136,7 +243,10 @@ class GregerUpdateAgent(Thread):
         '''
         # Logging
         localLog = logging.getLogger(self.logPath + ".run")
-        localLog.debug("Start checking for new software...")
+        self.log.info("Starting Greger Update Agent (GUA)...")
+
+        # Set start flag
+        GregerUpdateAgent.is_active = True
 
         # Start checking for updates
         loopCount = 0
@@ -144,10 +254,21 @@ class GregerUpdateAgent(Thread):
             loopCount += 1
             localLog.debug("Checking for updates (" + str(loopCount) + ")...")
 
-            # Get server revision...
-            self.getLatestSoftwareRevision()
+            # Get local revision record
+            localLog.debug("Getting local revision record...")
+            localRevision = self.localRevisionRecord
 
-            # Get delay time from settings
+            # Get server revision...
+            localLog.debug("Getting latest software info...")
+            latestRevisionInfo = self.getSoftwareInfo()
+
+            if int(localRevision) == int(latestRevisionInfo['revision']):
+                self.log.info("Local and server revisions match!")
+            else:
+                self.log.info("New revision found!")
+
+                ### Do update!! ###
+
             if 'guaCheckUpdateDelay' in greger.settings:
                 delayTime = greger.settings['guaCheckUpdateDelay']['value']
             else:
@@ -155,7 +276,8 @@ class GregerUpdateAgent(Thread):
                 self.log.warning("Settings not defined! (using default=10)")
 
             # Wait update delay
-            localLog.debug("Waiting " + str(delayTime) + "s...")
+            self.log.info("Waiting " + str(delayTime) + "s...")
             self.stopExecution.wait(delayTime)
 
-        localLog.debug("Greger Update Agent execution stopped!")
+        self.log.info("Greger Update Agent (GUA) execution stopped!")
+        GregerUpdateAgent.is_active = False
