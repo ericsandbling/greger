@@ -55,7 +55,7 @@ class owDevices(object):
         self.logPath = "root.OWD"
         self.log = logging.getLogger(self.logPath)
         localLog = logging.getLogger(self.logPath + ".__init__")
-        localLog.debug("Starting 1-Wire Devices interface...")
+        localLog.debug("Initiating 1-Wire Devices (OWD)...")
 
         # Instance variables
         self.enableTimeseries = True
@@ -78,7 +78,7 @@ class owDevices(object):
         self.timeseries = {}
 
         # Start message
-        self.log.info("1-Wire Devices initiated!")
+        self.log.info("1-Wire Devices (OWD) successfully initiated!")
 
     def _initOW(self):
         '''
