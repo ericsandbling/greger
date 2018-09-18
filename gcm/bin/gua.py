@@ -47,7 +47,7 @@ class GregerUpdateAgent(Thread):
 
         self.log.info("Greger Update Agent initiated successfully!")
 
-    def updateLocalRevisionRecord(self, serverRevision):
+    def updateLocalRevisionRecord(self, newRevision):
         '''
         Update local revision record (.gcm)
         '''
@@ -58,9 +58,9 @@ class GregerUpdateAgent(Thread):
         # Local parameters
         revisionRecord = self._location + "/.gcm"
 
-        localLog.debug("Attemption to write \"" + str(serverRevision) + "\" to file...")
+        localLog.debug("Attemption to write \"" + str(newRevision) + "\" to file...")
         with open(revisionRecord,"w") as f:
-            f.write(str(serverRevision))
+            f.write(str(newRevision))
         localLog.debug("Revision record updated!")
 
         with open(revisionRecord,"r") as f:
@@ -69,19 +69,19 @@ class GregerUpdateAgent(Thread):
 
         return localRevision
 
-    def getServerRevision(self):
+    def getLatestSoftwareRevision(self):
         '''
         Retrieve latest revision available on server.
         '''
         # Logging
-        localLog = logging.getLogger(self.logPath + ".getServerRevision")
+        localLog = logging.getLogger(self.logPath + ".getLatestSoftwareRevision")
         localLog.debug("Attempting to retrieve latest revision stored on the server...")
 
         # Locally relevant parameters
         if 'guaSWSource' in greger.settings:
             guaSWServerURI = greger.settings['guaSWSource']['value']
         else:
-            self.log.warning("Settings not defined!")
+            self.log.warning("Setting " + str(guaSWSource) + " not defined!")
             return
 
         # Get server revision info
@@ -101,6 +101,35 @@ class GregerUpdateAgent(Thread):
 
         self.localRevision = self.updateLocalRevisionRecord(serverRevision)
 
+    def getSowftware(self,swRev='HEAD'):
+        '''
+        Get software from server
+        '''
+        # Logging
+        localLog = logging.getLogger(self.logPath + ".getSowftware")
+        localLog.debug("Getting software revision " + str(swRev) + " from server...")
+
+        # Locally relevant parameters
+        if 'guaSWSource' in greger.settings:
+            guaSWServerURI = greger.settings['guaSWSource']['value']
+        else:
+            self.log.warning("Setting " + str(guaSWSource) + " not defined!")
+            return
+
+        # Get software revision
+        svnCmd  = "svn export --force -r " + str(swRev) + " "
+        svnCmd += "https://github.com/ericsandbling/greger/trunk/test "
+        svnCmd += "/home/pi/svntest/"
+        try:
+            p = subprocess.Popen(svnCmd, stdout=subprocess.PIPE, shell=True)
+            (serverRevision, err) = p.communicate()
+            serverRevision = int(serverRevision)
+            localLog.debug("Server revision = " + str(serverRevision))
+            if err is not None:
+                localLog.debug("Error message: " + str(err))
+        except Exception as e:
+            self.log.error("Oops! Something went wrong - " + str(e))
+
     def run(self):
         '''
         Run Greger Update Agent.
@@ -116,7 +145,7 @@ class GregerUpdateAgent(Thread):
             localLog.debug("Checking for updates (" + str(loopCount) + ")...")
 
             # Get server revision...
-            self.getServerRevision()
+            self.getLatestSoftwareRevision()
 
             # Get delay time from settings
             if 'guaCheckUpdateDelay' in greger.settings:
