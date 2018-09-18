@@ -21,7 +21,9 @@ if __name__ == '__main__':
     logger = lib.createLogger()
     logger.info("==== APPLICATION START ====")
     try:
-        APP = GregerClientModule()
+        GCM = GregerClientModule()
+        GCM.start()
+
     except KeyboardInterrupt:
         print 'Interrupted!'
         logger.info("Interrupted!")
@@ -29,5 +31,3 @@ if __name__ == '__main__':
             sys.exit("\n=== APPLICATION END (sys) ===")
         except SystemExit:
             os._exit(0)
-
-    logger.info("==== APPLICATION END ====")
