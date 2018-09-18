@@ -12,24 +12,31 @@ __status__ = 'Development'
 
 import os, sys, argparse
 import time
+from threading import Event
 from threading import Timer
+from threading import Thread
 import logging
 import ConfigParser
 
 # Custom libraries
 from bin.owd import owDevices
-import bin.gdb as gdb
-import bin.gua as gua
+from bin.gdb import GregerDatabase
+from bin.gua import GregerUpdateAgent
 from bin.common import getLocalConfig
 
-class GregerClientModule(object):
+class GregerClientModule(Thread):
     """
     Main class which holds the main sequence of the application.
     """
+
+    is_active = False
+
     def __init__(self):
         '''
         Initialize the main class
         '''
+        Thread.__init__(self)
+
         # Setup logging
         self.logPath = "root.GCM"
         self.log = logging.getLogger(self.logPath)
@@ -46,13 +53,13 @@ class GregerClientModule(object):
 
         # Initiate firebase connection and get settings from server
         localLog.debug("Attempting to initiate Greger Database (GDB)...")
-        self.GregerDatabase = gdb.GregerDatabase()
+        self.GregerDatabase = GregerDatabase()
         localLog.debug("Attempting to start Greger Database (GDB)...")
         self.GregerDatabase.start()
 
         # Initialize Greger Update Agent
         localLog.debug("Attempting to initiate Greger Update Agent (GUA)...")
-        self.GregerUpdateAgent = gua.GregerUpdateAgent()
+        self.GregerUpdateAgent = GregerUpdateAgent()
         localLog.debug("Attempting to start Greger Update Agent (GUA)...")
         self.GregerUpdateAgent.start()
 
@@ -60,14 +67,7 @@ class GregerClientModule(object):
         localLog.debug("Attempting to initiate 1-Wire Server connection...")
         self.owDevices = owDevices()
 
-        # Start execution timer
-        localLog.debug("Attempting to initiate Execution Timer...")
-        self._startExecution()
-
-        # Start main loop
-        localLog.debug("Greger Client Module initiated successfully!")
-        localLog.debug("Initiating Main...")
-        self.main()
+        self.log.info("Greger Client Module (GCM) successfully initiated!")
 
     def whereami(self):
         """
@@ -111,7 +111,7 @@ class GregerClientModule(object):
         localLog.debug("Initiating Execution Timer...")
 
         # Execution Timer parameters
-        self.execute = True
+        self.stopExecution = Event()
         self.stopTime = 0
         self.pauseExecution = False
 
@@ -119,7 +119,7 @@ class GregerClientModule(object):
         if self.runTime != 0:
             self._executionTimer = Timer(float(self.runTime), self._stopExecution)
             self._executionTimer.start()
-            localLog.debug("Execution Timer started successfully!")
+            localLog.debug("Execution Timer started successfully! ")
             self.log.info("End Execution Timer started with runTime: " + str(self.runTime) + " second(s).")
         else:
             localLog.debug("Execution Timer disabled! runTime=" + self.runTime)
@@ -131,83 +131,66 @@ class GregerClientModule(object):
         '''
         # Log
         localLog = logging.getLogger(self.logPath + "._stopExecution")
-        localLog.debug("Attempting to stop all execution...")
+        self.log.info("End Execution Timer hit!")
 
-        # Set stop flag for main method
-        self.execute = False
-        self.stopTime = time.time()
-        self.log.info("End Execution Timer hit, main loop execution flag set to False.")
+        # Attempt to stop all threads
+        localLog.debug("Attempting to stop all execution...")
 
         # Stop Greger Update Agent (GUA)
         localLog.debug("Attempting to stop Greger Update Agent (GUA)...")
         try:
             self.GregerUpdateAgent.stopExecution.set()
         except Exception as e:
-            localLog.error("Oops! Failed to stop Greger Update Agent - " + str(e))
+            localLog.error("Oops! Failed to stop Greger Update Agent (GUA) - " + str(e))
 
         # Stop Greger Database (GDB)
         localLog.debug("Attempting to stop Greger Database (GDB)...")
         try:
             self.GregerDatabase.stopExecution.set()
         except Exception as e:
-            localLog.error("Oops! Failed to stop Greger Update Agent - " + str(e))
+            localLog.error("Oops! Failed to stop Greger Database (GDB) - " + str(e))
 
-
-    def _updateSettings(self):
-        '''
-        Update all settings.
-        '''
-        # Log
-        localLog = logging.getLogger(self.logPath + "._updateSettings")
-        localLog.debug("Updating GCM settings...")
-
-        # Retrieve updated settings from database
-        localLog.debug("Retrieving updated settings from database...")
-        oldSettings = self.settings.copy()
+        # Stop main method
+        localLog.debug("Attempting to stop Greger Client Module (GCM)...")
         try:
-            # Get updated settings
-            self.settings = self.GregerDatabase.getSettings()
-            localLog.debug("New/modified settings successfully retrieved from database.")
+            self.stopExecution.set()
         except Exception as e:
-            self.log.warning("Oops! Failed to get data! - " + str(e))
+            localLog.error("Oops! Failed to stop Client Module (GCM) - " + str(e))
 
-        if oldSettings != self.settings:
-            # Check if execution is paused
-            localLog.debug("Checking if execution is pasued from database...")
-            if self.settings['deviceReadingsEnable']['value']:
-                self.pauseExecution = False
-                localLog.debug("Execution is paused!")
-            else:
-                self.pauseExecution = True
-                localLog.debug("Execution is not paused.")
+        # Wait for execution to stop for all threads
+        localLog.debug("Waiting for all threads to stop...")
+        wait = True
+        while wait:
+            wait =          GregerDatabase.is_active
+            wait = wait and GregerUpdateAgent.is_active
 
-            # Update Greger Update Agent settings
-            localLog.debug("Updating new/changed GUA settings...")
-            self.GregerUpdateAgent.settings = self.settings
+        # Get stop time
+        time.sleep(1)
+        stopTime = time.time()
+        self.log.info("All threads are stopped!")
+        self.log.info("Execution stopped at: " + time.strftime('%Y-%m-%d %H:%M:%S'))
 
-            # Update owDevices settings
-            localLog.debug("Updating new/changed owDevices settings...")
-            self.owDevices.settings = self.settings
-
-        else:
-            localLog.debug("No new settings detected!")
-
-    def main(self):
+    def run(self):
         '''
         Main loop of the program.
         '''
         # Logging
-        localLog = logging.getLogger(self.logPath + ".main")
-        self.log.info("Starting main loop...")
+        localLog = logging.getLogger(self.logPath + ".run")
+        self.log.info("Starting Greger Client Module (GCM)...")
+
+        # Set active flag
+        GregerClientModule.is_active = True
+
+        # Start execution timer
+        localLog.debug("Attempting to initiate Execution Timer...")
+        self._startExecution()
 
         # Main loop
-        while self.execute:
-            # Update new/modified settings
-            # self._updateSettings()
-
+        while self.GregerDatabase.settings['gcmEnableOWD']['value'] and not self.stopExecution.is_set():
             # Check if execution is paused
-            # if self.pauseExecution:
             if not self.GregerDatabase.settings['gcmEnableOWD']['value']:
+                localLog.debug(self.GregerDatabase.settings['gcmEnableOWD']['name'] + " = False")
+                localLog.debug("Pausing 5s...")
                 time.sleep(5)
                 continue
 
@@ -240,5 +223,4 @@ class GregerClientModule(object):
             self.log.info("Timeseries published to Firebase Realtime Database.")
 
         # Print END message
-        self.log.info("Execution ended! (Stopped at: " +
-            time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(self.stopTime)) + ")")
+        localLog.debug("Execution stoped!")
