@@ -33,6 +33,7 @@ class GregerDatabase(Thread):
 
     settings = {}
     about = {}
+    is_active = False
 
     def __init__(self):
         '''
@@ -47,11 +48,11 @@ class GregerDatabase(Thread):
         self.logPath = "root.GDB"
         self.log = logging.getLogger(self.logPath)
         localLog = logging.getLogger(self.logPath + ".__init__")
-        localLog.debug("Starting Greger (Firebase RealTime) Database...")
+        localLog.debug("Initiating Greger Database (GDB)...")
 
         # Initialize Firebase connection
         self._initConnection()
-        self.log.info("Greger Database initiated successfully!")
+        self.log.info("Greger Database (GDB) successfully initiated!")
 
     def _initConnection(self):
         '''
@@ -190,7 +191,7 @@ class GregerDatabase(Thread):
         Get GCM settings.
         '''
         localLog = logging.getLogger(self.logPath + "._getSettings")
-        self.log.info("Refreshing settings...")
+        localLog.debug("Refreshing settings...")
 
         # Ensure CLient Module has an account and settings
         localLog.debug("Ensuring GCM has a reviewed account...")
@@ -228,7 +229,7 @@ class GregerDatabase(Thread):
         # Checking settings for updates...
         localLog.debug("Checking settings...")
         if oldSettings == self.settings:
-            self.log.info("No new settings detected!")
+            localLog.debug("No new settings detected!")
         else:
             self.log.info("New/updated settings detected!")
             for setting in sorted(self.settings):
@@ -259,7 +260,7 @@ class GregerDatabase(Thread):
         Get GCM about.
         '''
         localLog = logging.getLogger(self.logPath + "._getAbout")
-        self.log.info("Refreshing about...")
+        localLog.debug("Refreshing about...")
 
         # Ensure CLient Module has an account and settings
         localLog.debug("Ensuring GCM has a reviewed account...")
@@ -282,7 +283,7 @@ class GregerDatabase(Thread):
         # Checking about for updates...
         localLog.debug("Checking \"about\" for updates...")
         if oldAbout == self.about:
-            self.log.info("No new \"about\" detected!")
+            localLog.debug("No new \"about\" detected!")
         else:
             self.log.info("New/updated \"about\" detected!")
             for parameter in sorted(self.about):
@@ -323,7 +324,10 @@ class GregerDatabase(Thread):
         '''
         # Logging
         localLog = logging.getLogger(self.logPath + ".run")
-        localLog.debug("Starting checking for updates to server...")
+        self.log.info("Starting Greger Database (GDB)...")
+
+        # Set start flag
+        GregerDatabase.is_active = True
 
         # Start checking for updates
         loopCount = 0
@@ -339,4 +343,5 @@ class GregerDatabase(Thread):
             localLog.debug("Waiting " + str(self.settings['gdbCheckUpdateDelay']['value']) + "s...")
             self.stopExecution.wait(self.settings['gdbCheckUpdateDelay']['value'])
 
-        localLog.debug("Greger Database execution stopped!")
+        self.log.info("Greger Database (GDB) execution stopped!")
+        GregerDatabase.is_active = False
