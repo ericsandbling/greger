@@ -82,7 +82,7 @@ class GregerUpdateAgent(Thread):
         '''
         # Logging
         localLog = logging.getLogger(self.logPath + ".localRevisionRecord")
-        localLog.debug("Setting local revision record (.gcm)...")
+        localLog.debug("Setting local revision record (.gcm) to " + newRevision + "...")
 
         # Local parameters
         revisionRecordPath = self._location + "/.gcm"
@@ -185,25 +185,37 @@ class GregerUpdateAgent(Thread):
         pCmd  =       "svn export --force -r " + str(swRev)
         pCmd += " " + guaSWServerURI
         pCmd += " " + targetPath
-        pCmd += " " + '| grep -e "A " -e "U "'    # Filter output to Added an Updeted files
-        pCmd += " " + "| awk '{print $2}'"        # Get files
+        # pCmd += " " + '| grep -e "A " -e "U "'    # Filter output to Added an Updeted files
+        # pCmd += " " + "| awk '{print $2}'"        # Get files
         localLog.debug("Getting software files from server...")
         localLog.debug(pCmd)
         try:
             p = subprocess.Popen(pCmd, stdout=subprocess.PIPE, shell=True)
             (output, err) = p.communicate()
-            exportedFiles = output.splitlines()[1:]
-            exportedFiles = [targetRoot + file for file in exportedFiles]
-
-            self.log.info("Software files downloaded:")
-            for file in exportedFiles:
-                self.log.info("File: " + file)
 
             if err is not None:
                 localLog.debug("Error message: " + str(err))
+            else:
+                localLog.debug("Download successful!")
 
         except Exception as e:
             self.log.error("Oops! Something went wrong - " + str(e))
+
+        # Get downloaded software revision
+        localLog.debug("Reading downloaded revision...")
+        revText = output.splitlines()[-1].split()[-1][:-1]
+        localLog.debug("Downloaded Revision: " + revText)
+
+        # Update local revision record
+        self.localRevisionRecord = revText
+
+        # Get downloaded files text
+        localLog.debug("Listing downloaded files...")
+        downloadedFiles = []
+        for row in output.splitlines()[:-1]:
+            file = targetRoot + [t.strip() for t in row.split()][1]
+            downloadedFiles.append(file)
+            localLog.debug("File: " + file)
 
         # List files in directory
         self.log.debug("Getting all files in local directory (after update)...")
@@ -218,7 +230,7 @@ class GregerUpdateAgent(Thread):
                 self.log.debug("Dir:  " + os.path.join(r, file))
 
         self.log.info("Identifying old files to remove (<new_files> - <all_files>)...")
-        diffFiles = list(set(allFiles) - set(exportedFiles))
+        diffFiles = list(set(allFiles) - set(downloadedFiles))
         for file in diffFiles:
             self.log.info("Removing: " + file)
             try:
