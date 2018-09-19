@@ -15,21 +15,23 @@ import time
 from threading import Event
 from threading import Timer
 from threading import Thread
+from threading import enumerate
+from threading import current_thread
 import logging
 import ConfigParser
 
 # Custom libraries
-from bin.owd import owDevices
-from bin.gdb import GregerDatabase
-from bin.gua import GregerUpdateAgent
-from bin.common import getLocalConfig
+from owd import owDevices
+from gdb import GregerDatabase
+from gua import GregerUpdateAgent
+from common import getLocalConfig
 
 class GregerClientModule(Thread):
     """
     Main class which holds the main sequence of the application.
     """
 
-    is_active = False
+    is_running = Event()
 
     def __init__(self):
         '''
@@ -59,13 +61,17 @@ class GregerClientModule(Thread):
 
         # Initialize Greger Update Agent
         localLog.debug("Attempting to initiate Greger Update Agent (GUA)...")
-        self.GregerUpdateAgent = GregerUpdateAgent()
+        self.GregerUpdateAgent = GregerUpdateAgent(ready=self.is_running)
         localLog.debug("Attempting to start Greger Update Agent (GUA)...")
         self.GregerUpdateAgent.start()
 
         # Init owDevices and update settings
         localLog.debug("Attempting to initiate 1-Wire Server connection...")
         self.owDevices = owDevices()
+
+        # List all created threads!
+        for thr in enumerate():
+            localLog.debug(thr.name + " " + thr.__class__.__name__ +" created.")
 
         self.log.info("Greger Client Module (GCM) successfully initiated!")
 
@@ -117,7 +123,7 @@ class GregerClientModule(Thread):
 
         # Start Execution Timer
         if self.runTime != 0:
-            self._executionTimer = Timer(float(self.runTime), self._stopExecution)
+            self._executionTimer = Timer(float(self.runTime), self.stopAll)
             self._executionTimer.start()
             localLog.debug("Execution Timer started successfully! ")
             self.log.info("End Execution Timer started with runTime: " + str(self.runTime) + " second(s).")
@@ -125,23 +131,30 @@ class GregerClientModule(Thread):
             localLog.debug("Execution Timer disabled! runTime=" + self.runTime)
             self.log.info("End Execution Timer disabled! (infinite run time enabled)")
 
-    def _stopExecution(self):
+    def stopAll(self, GUA=False):
         '''
         Set flags to stop execution
         '''
         # Log
-        localLog = logging.getLogger(self.logPath + "._stopExecution")
-        self.log.info("End Execution Timer hit!")
+        localLog = logging.getLogger(self.logPath + ".stopAll")
+        if GUA:
+            self.log.info("Execution stop requested by: Greger Update Agent (GUA)")
+        else:
+            self.log.info("Execution stop requested by: End Execution Timer")
+            # self.log.info("End Execution Timer hit!")
 
         # Attempt to stop all threads
-        localLog.debug("Attempting to stop all execution...")
+        self.log.info("Attempting to stop all execution...")
 
-        # Stop Greger Update Agent (GUA)
-        localLog.debug("Attempting to stop Greger Update Agent (GUA)...")
-        try:
-            self.GregerUpdateAgent.stopExecution.set()
-        except Exception as e:
-            localLog.error("Oops! Failed to stop Greger Update Agent (GUA) - " + str(e))
+        if not GUA:
+            # Stop Greger Update Agent (GUA)
+            localLog.debug("Attempting to stop Greger Update Agent (GUA)...")
+            try:
+                self.GregerUpdateAgent.stopExecution.set()
+            except Exception as e:
+                localLog.error("Oops! Failed to stop Greger Update Agent (GUA) - " + str(e))
+        else:
+            localLog.debug("Skipping to stop Greger Update Agent (GUA).")
 
         # Stop Greger Database (GDB)
         localLog.debug("Attempting to stop Greger Database (GDB)...")
@@ -159,13 +172,13 @@ class GregerClientModule(Thread):
 
         # Wait for execution to stop for all threads
         localLog.debug("Waiting for all threads to stop...")
-        wait = True
-        while wait:
-            wait =          GregerDatabase.is_active
-            wait = wait and GregerUpdateAgent.is_active
+        self.GregerDatabase.join()
+        self.log.info("Greger Database (GDB) stopped!")
+        if not GUA:
+            self.GregerUpdateAgent.join()
+            self.log.info("Greger Update Agent (GUA) stopped!")
 
         # Get stop time
-        time.sleep(1)
         stopTime = time.time()
         self.log.info("All threads are stopped!")
         self.log.info("Execution stopped at: " + time.strftime('%Y-%m-%d %H:%M:%S'))
@@ -179,11 +192,15 @@ class GregerClientModule(Thread):
         self.log.info("Starting Greger Client Module (GCM)...")
 
         # Set active flag
-        GregerClientModule.is_active = True
+        self.is_running.set()
 
         # Start execution timer
         localLog.debug("Attempting to initiate Execution Timer...")
         self._startExecution()
+
+        # List all active threads!
+        for thr in enumerate():
+            localLog.debug(thr.name + " " + thr.__class__.__name__ +" active!")
 
         # Main loop
         while self.GregerDatabase.settings['gcmEnableOWD']['value'] and not self.stopExecution.is_set():

@@ -8,12 +8,28 @@ Configuration and settings library for the Greger Client Module software.
 __author__ = "Eric Sandbling"
 __status__ = 'Development'
 
+import os, sys
 from os import listdir
 from os.path import isfile, join
 
 import ConfigParser
 import logging
 from logging.handlers import RotatingFileHandler
+
+#### Update tools ####
+def restart_program():
+    """
+    Restarts the current program.
+
+    Note: this function does not return. Any cleanup action (like
+    saving data) must be done before calling this function.
+    """
+    # Logging
+    localLog = logging.getLogger("root")
+    localLog.info("Restarting application...")
+
+    python = sys.executable
+    os.execl(python, python, * sys.argv)
 
 #### Configuration Methods ####
 

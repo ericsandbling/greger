@@ -15,6 +15,7 @@ import time, sys
 import logging
 from threading import Event
 from threading import Thread
+from threading import enumerate
 
 # Firebase Python Admin SDK
 import firebase_admin
@@ -33,7 +34,6 @@ class GregerDatabase(Thread):
 
     settings = {}
     about = {}
-    is_active = False
 
     def __init__(self):
         '''
@@ -125,8 +125,8 @@ class GregerDatabase(Thread):
 
         # Does client exist?
         if self.dbRoot.child(gcmPath).get(shallow=True) is None:
-            localLog.debug("GCM account is missing!")
-            localLog.debug("Attempting to create GCM account using GDB default account.")
+            localLog.debug("Client account is missing!")
+            localLog.debug("Attempting to create client account using GDB default account.")
             try:
                 self.dbRoot.child(gcmPath).update(self.dbRoot.child(defaultPath).get())
                 self.log.info("Greger Client Module account successfully created from default!")
@@ -146,8 +146,8 @@ class GregerDatabase(Thread):
 
         # Does all settings exist?
         else:
-            localLog.debug("GCM account exists, with settings.")
-            localLog.debug("Checking that all settings are present in GCM account...")
+            localLog.debug("Client account exists, with settings.")
+            localLog.debug("Checking that all settings are present in client account...")
             localLog.debug("Attempting to retrieve settings...")
             try:
                 defaultSettings = self.dbRoot.child(defaultPath + "/settings").get()
@@ -180,27 +180,27 @@ class GregerDatabase(Thread):
                 self.log.error("Oops! Failed to add /about to Greger Client Module Account on server! - " + str(e))
 
         # Update client root reference
-        localLog.debug("Attempting to get db reference to GCM account...")
+        localLog.debug("Attempting to get db reference to client account...")
         self.dbGCMRoot = db.reference(gcmPath)
-        localLog.debug("GCM account review complete!")
+        localLog.debug("Client account review complete!")
 
         self._accountReviewedOK = True
 
     def _getSettings(self):
         '''
-        Get GCM settings.
+        Get client settings.
         '''
         localLog = logging.getLogger(self.logPath + "._getSettings")
         localLog.debug("Refreshing settings...")
 
         # Ensure CLient Module has an account and settings
-        localLog.debug("Ensuring GCM has a reviewed account...")
+        localLog.debug("Ensuring client has a reviewed account...")
         if not self._accountReviewedOK:
-            localLog.debug("GCM not reviewed...")
+            localLog.debug("Client not reviewed...")
             localLog.debug("Attempting to (re-)setup account for " + gcmName + "...")
             self._setupAccount()
         else:
-            localLog.debug("GCM account OK!")
+            localLog.debug("Client account OK!")
 
         # Get new settings
         localLog.debug("Attempting to retrieve new/updated settings...")
@@ -257,19 +257,19 @@ class GregerDatabase(Thread):
 
     def _getAbout(self):
         '''
-        Get GCM about.
+        Get client about.
         '''
         localLog = logging.getLogger(self.logPath + "._getAbout")
         localLog.debug("Refreshing about...")
 
         # Ensure CLient Module has an account and settings
-        localLog.debug("Ensuring GCM has a reviewed account...")
+        localLog.debug("Ensuring client has a reviewed account...")
         if not self._accountReviewedOK:
-            localLog.debug("GCM not reviewed...")
+            localLog.debug("Client not reviewed...")
             localLog.debug("Attempting to (re-)setup account for " + gcmName + "...")
             self._setupAccount()
         else:
-            localLog.debug("GCM account OK!")
+            localLog.debug("Client account OK!")
 
         # Get new settings
         localLog.debug("Attempting to retrieve new/updated \"about\"...")
@@ -312,7 +312,7 @@ class GregerDatabase(Thread):
         '''
         localLog = logging.getLogger(self.logPath + ".update")
 
-        localLog.debug("Attempting to update GCM account child...")
+        localLog.debug("Attempting to update client account child...")
         try:
             self.dbGCMRoot.child(path).update(value)
         except Exception as e:
@@ -325,9 +325,6 @@ class GregerDatabase(Thread):
         # Logging
         localLog = logging.getLogger(self.logPath + ".run")
         self.log.info("Starting Greger Database (GDB)...")
-
-        # Set start flag
-        GregerDatabase.is_active = True
 
         # Start checking for updates
         loopCount = 0
@@ -344,4 +341,3 @@ class GregerDatabase(Thread):
             self.stopExecution.wait(self.settings['gdbCheckUpdateDelay']['value'])
 
         self.log.info("Greger Database (GDB) execution stopped!")
-        GregerDatabase.is_active = False

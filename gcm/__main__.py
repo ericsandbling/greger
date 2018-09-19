@@ -13,16 +13,17 @@ import os, sys
 import logging
 
 # Custom libraries
-from gcm import GregerClientModule
+from bin.gcm import GregerClientModule
 import bin.common as lib
 
 if __name__ == '__main__':
 
     logger = lib.createLogger()
-    logger.info("==== APPLICATION START ====")
+    logger.info("Starting application...")
     try:
         GCM = GregerClientModule()
         GCM.start()
+        GCM.join()
 
     except KeyboardInterrupt:
         print 'Interrupted!'

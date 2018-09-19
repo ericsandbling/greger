@@ -10,28 +10,30 @@ __license__ = 'MIT'
 __status__ = 'Development'
 
 # System modules
-import os
+import os, sys
 import logging
 import subprocess
 from threading import Event
 from threading import Thread
+from threading import enumerate
 
 # Local Modules
 from common import getLocalConfig
-from gdb import GregerDatabase as greger
+from common import restart_program
+from gdb import GregerDatabase
+# from gcm import GregerClientModule
 
 class GregerUpdateAgent(Thread):
     """
     Main class which holds the main sequence of the application.
     """
 
-    is_active = False
-
-    def __init__(self):
+    def __init__(self, ready=None):
         '''
         Initialize the main class
         '''
         Thread.__init__(self)
+        self.ready = ready
 
         # Setup logging
         self.logPath = "root.GUA"
@@ -99,8 +101,8 @@ class GregerUpdateAgent(Thread):
         localLog.debug("Attempting to retrieve software revision info...")
 
         # Locally relevant parameters
-        if 'guaSWSource' in greger.settings:
-            guaSWServerURI = greger.settings['guaSWSource']['value']
+        if 'guaSWSource' in GregerDatabase.settings:
+            guaSWServerURI = GregerDatabase.settings['guaSWSource']['value']
         else:
             self.log.warning("Setting " + str(guaSWSource) + " not defined!")
             return
@@ -159,20 +161,22 @@ class GregerUpdateAgent(Thread):
 
         return moduleReturn
 
-    def getSoftware(self,swRev='HEAD'):
+    def updateSoftware(self, swRev='HEAD'):
         '''
-        Get software from server
+        Get and updating software from server
         '''
         # Logging
-        localLog = logging.getLogger(self.logPath + ".getSoftware")
-        localLog.debug("Getting software revision " + str(swRev) + " from server...")
+        localLog = logging.getLogger(self.logPath + ".updateSoftware")
+        localLog.debug("Getting software revision " + str(swRev) + " from server and updating local client...")
 
         # Locally relevant parameters
+        localLog.debug("Retrieving relevant parameters from server...")
         targetRoot = self._location
         targetDir  = "gcm/"
         targetPath = targetRoot + targetDir
-        if 'guaSWSource' in greger.settings:
-            guaSWServerURI = greger.settings['guaSWSource']['value']
+        if 'guaSWSource' in GregerDatabase.settings:
+            guaSWServerURI = GregerDatabase.settings['guaSWSource']['value']
+            localLog.debug("Parameter: (guaSWSource) " + guaSWServerURI)
         else:
             self.log.warning("Setting " + str(guaSWSource) + " not defined!")
             return
@@ -184,6 +188,7 @@ class GregerUpdateAgent(Thread):
         pCmd += " " + '| grep -e "A " -e "U "'    # Filter output to Added an Updeted files
         pCmd += " " + "| awk '{print $2}'"        # Get files
         localLog.debug("Getting software files from server...")
+        localLog.debug(pCmd)
         try:
             p = subprocess.Popen(pCmd, stdout=subprocess.PIPE, shell=True)
             (output, err) = p.communicate()
@@ -196,23 +201,23 @@ class GregerUpdateAgent(Thread):
 
             if err is not None:
                 localLog.debug("Error message: " + str(err))
+
         except Exception as e:
             self.log.error("Oops! Something went wrong - " + str(e))
 
         # List files in directory
-        self.log.debug("Getting all files in local directory...")
+        self.log.debug("Getting all files in local directory (after update)...")
         allFiles = []
         # r=root, d=directories, f = files
         for r, d, f in os.walk(targetPath):
             for file in f:
                 allFiles.append(os.path.join(r, file))
+                self.log.debug("File: " + os.path.join(r, file))
             for dir in d:
                 allFiles.append(os.path.join(r, dir))
-        self.log.debug("Files in directory:")
-        for file in allFiles:
-            self.log.debug("File: " + file)
+                self.log.debug("Dir:  " + os.path.join(r, file))
 
-        self.log.info("Identifying old files to remove...")
+        self.log.info("Identifying old files to remove (<new_files> - <all_files>)...")
         diffFiles = list(set(allFiles) - set(exportedFiles))
         for file in diffFiles:
             self.log.info("Removing: " + file)
@@ -231,11 +236,10 @@ class GregerUpdateAgent(Thread):
         for r, d, f in os.walk(targetPath):
             for file in f:
                 allFiles.append(os.path.join(r, file))
+                self.log.debug("File: " + os.path.join(r, file))
             for dir in d:
                 allFiles.append(os.path.join(r, dir))
-        self.log.debug("Files in directory:")
-        for file in allFiles:
-            self.log.debug("File: " + file)
+                self.log.debug("Dir:  " + os.path.join(r, file))
 
     def run(self):
         '''
@@ -245,8 +249,17 @@ class GregerUpdateAgent(Thread):
         localLog = logging.getLogger(self.logPath + ".run")
         self.log.info("Starting Greger Update Agent (GUA)...")
 
-        # Set start flag
-        GregerUpdateAgent.is_active = True
+        # Wait for Greger Client Module to start...
+        localLog.debug("Wait for Greger Client Module to start...")
+        self.ready.wait()
+
+        # List all active threads!
+        gcmThread = None
+        for thr in enumerate():
+            localLog.debug(thr.name + " " + thr.__class__.__name__ +" active!")
+            if thr.__class__.__name__ == "GregerClientModule":
+                gcmThread = thr
+                localLog.debug("Greger Client Module thread found! " + gcmThread.name)
 
         # Start checking for updates
         loopCount = 0
@@ -267,10 +280,19 @@ class GregerUpdateAgent(Thread):
             else:
                 self.log.info("New revision found!")
 
-                ### Do update!! ###
+                # Tell GCM to stop all treads (except GUA)...
+                self.log.warning("Attempting to stop all exection!")
+                gcmThread.stopAll(GUA=True)
 
-            if 'guaCheckUpdateDelay' in greger.settings:
-                delayTime = greger.settings['guaCheckUpdateDelay']['value']
+                # Do update!!
+                self.updateSoftware()
+
+                # Restart Application
+                localLog.debug("Attemption to restart application...")
+                restart_program()
+
+            if 'guaCheckUpdateDelay' in GregerDatabase.settings:
+                delayTime = GregerDatabase.settings['guaCheckUpdateDelay']['value']
             else:
                 delayTime = 10
                 self.log.warning("Settings not defined! (using default=10)")
@@ -280,4 +302,3 @@ class GregerUpdateAgent(Thread):
             self.stopExecution.wait(delayTime)
 
         self.log.info("Greger Update Agent (GUA) execution stopped!")
-        GregerUpdateAgent.is_active = False
