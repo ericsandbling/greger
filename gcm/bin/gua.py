@@ -61,7 +61,7 @@ class GregerUpdateAgent(Thread):
         localLog.debug("Getting local revision record (.gcm)...")
 
         # Local parameters
-        revisionRecordPath = self._location + "/.gcm"
+        revisionRecordPath = os.path.join(self._location, ".gcm")
 
         localLog.debug("Attemption to get record from file...")
         try:
@@ -82,10 +82,10 @@ class GregerUpdateAgent(Thread):
         '''
         # Logging
         localLog = logging.getLogger(self.logPath + ".localRevisionRecord")
-        localLog.debug("Setting local revision record (.gcm) to " + newRevision + "...")
+        localLog.debug("Setting local revision record (.gcm) to " + str(newRevision) + "...")
 
         # Local parameters
-        revisionRecordPath = self._location + "/.gcm"
+        revisionRecordPath = os.path.join(self._location, ".gcm")
 
         localLog.debug("Attemption to write \"" + str(newRevision) + "\" to file...")
         with open(revisionRecordPath,"w") as f:
@@ -172,8 +172,8 @@ class GregerUpdateAgent(Thread):
         # Locally relevant parameters
         localLog.debug("Retrieving relevant parameters from server...")
         targetRoot = self._location
-        targetDir  = "gcm/"
-        targetPath = targetRoot + targetDir
+        targetDir  = "gcm"
+        targetPath = os.path.join(targetRoot + targetDir)
         if 'guaSWSource' in GregerDatabase.settings:
             guaSWServerURI = GregerDatabase.settings['guaSWSource']['value']
             localLog.debug("Parameter: (guaSWSource) " + guaSWServerURI)
@@ -181,14 +181,16 @@ class GregerUpdateAgent(Thread):
             self.log.warning("Setting " + str(guaSWSource) + " not defined!")
             return
 
-        # Get software revision
+        # Get software files from server
+        localLog.debug("Getting software files from server...")
+
+        # Compile download command
         pCmd  =       "svn export --force -r " + str(swRev)
         pCmd += " " + guaSWServerURI
         pCmd += " " + targetPath
-        # pCmd += " " + '| grep -e "A " -e "U "'    # Filter output to Added an Updeted files
-        # pCmd += " " + "| awk '{print $2}'"        # Get files
-        localLog.debug("Getting software files from server...")
         localLog.debug(pCmd)
+
+        # Execute command
         try:
             p = subprocess.Popen(pCmd, stdout=subprocess.PIPE, shell=True)
             (output, err) = p.communicate()
@@ -197,12 +199,15 @@ class GregerUpdateAgent(Thread):
                 localLog.debug("Error message: " + str(err))
             else:
                 localLog.debug("Download successful!")
+                # Print output
+                for line in output.splitlines():
+                    localLog.debug("Line: " + line)
 
         except Exception as e:
             self.log.error("Oops! Something went wrong - " + str(e))
 
-        # Get downloaded software revision
-        localLog.debug("Reading downloaded revision...")
+        # Read revision text
+        localLog.debug("Reading downloaded revision from \"" + output.splitlines()[-1] + "\"...")
         revText = output.splitlines()[-1].split()[-1][:-1]
         localLog.debug("Downloaded Revision: " + revText)
 
@@ -213,7 +218,7 @@ class GregerUpdateAgent(Thread):
         localLog.debug("Listing downloaded files...")
         downloadedFiles = []
         for row in output.splitlines()[:-1]:
-            file = targetRoot + [t.strip() for t in row.split()][1]
+            file = os.path.join(targetRoot, [t.strip() for t in row.split()][1])
             downloadedFiles.append(file)
             localLog.debug("File: " + file)
 
