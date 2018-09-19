@@ -173,7 +173,7 @@ class GregerUpdateAgent(Thread):
         localLog.debug("Retrieving relevant parameters from server...")
         targetRoot = self._location
         targetDir  = "gcm"
-        targetPath = os.path.join(targetRoot + targetDir)
+        targetPath = os.path.join(targetRoot, targetDir)
         if 'guaSWSource' in GregerDatabase.settings:
             guaSWServerURI = GregerDatabase.settings['guaSWSource']['value']
             localLog.debug("Parameter: (guaSWSource) " + guaSWServerURI)
