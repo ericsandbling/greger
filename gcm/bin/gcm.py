@@ -128,7 +128,7 @@ class GregerClientModule(Thread):
             localLog.debug("Execution Timer started successfully! ")
             self.log.info("End Execution Timer started with runTime: " + str(self.runTime) + " second(s).")
         else:
-            localLog.debug("Execution Timer disabled! runTime=" + self.runTime)
+            localLog.debug("Execution Timer disabled! runTime=" + str(self.runTime))
             self.log.info("End Execution Timer disabled! (infinite run time enabled)")
 
     def stopAll(self, GUA=False):
