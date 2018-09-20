@@ -19,7 +19,7 @@ import bin.common as lib
 if __name__ == '__main__':
 
     logger = lib.createLogger()
-    logger.info("Starting application...")
+    logger.info("Starting application....")
     try:
         GCM = GregerClientModule()
         GCM.start()
