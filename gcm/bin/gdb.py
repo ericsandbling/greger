@@ -33,7 +33,7 @@ class GregerDatabase(Thread):
     '''
 
     settings = {}
-    about = {}
+    # about = {}
 
     def __init__(self):
         '''
@@ -102,8 +102,8 @@ class GregerDatabase(Thread):
         localLog.debug("Attempting to retrieve settings from account...")
         self._getSettings()
 
-        localLog.debug("Attempting to retrieve about from account...")
-        self._getAbout()
+        # localLog.debug("Attempting to retrieve about from account...")
+        # self._getAbout()
 
     def _setupAccount(self):
         '''
@@ -255,56 +255,56 @@ class GregerDatabase(Thread):
 
         return self.settings
 
-    def _getAbout(self):
-        '''
-        Get client about.
-        '''
-        localLog = logging.getLogger(self.logPath + "._getAbout")
-        localLog.debug("Refreshing about...")
-
-        # Ensure CLient Module has an account and settings
-        localLog.debug("Ensuring client has a reviewed account...")
-        if not self._accountReviewedOK:
-            localLog.debug("Client not reviewed...")
-            localLog.debug("Attempting to (re-)setup account for " + gcmName + "...")
-            self._setupAccount()
-        else:
-            localLog.debug("Client account OK!")
-
-        # Get new settings
-        localLog.debug("Attempting to retrieve new/updated \"about\"...")
-        oldAbout = self.about.copy()
-        try:
-            GregerDatabase.about = self.dbGCMRoot.child("about").get()
-            localLog.debug("\"About\" successfully retrieved!")
-        except Exception as e:
-            self.log.error("Oops! Failed to retrieve \"about\". - " + str(e))
-
-        # Checking about for updates...
-        localLog.debug("Checking \"about\" for updates...")
-        if oldAbout == self.about:
-            localLog.debug("No new \"about\" detected!")
-        else:
-            self.log.info("New/updated \"about\" detected!")
-            for parameter in sorted(self.about):
-                if parameter in oldAbout:
-                    if oldAbout[parameter] != self.about[parameter]:
-                        self.log.info("Changed: " +
-                            self.about[parameter]['name'] + " = " +
-                            str(self.about[parameter]['value']))
-                elif oldAbout == {}:
-                    self.log.info("About: " +
-                        self.about[parameter]['name'] + " = " +
-                        str(self.about[parameter]['value']))
-                else:
-                    self.log.info("New: " +
-                        self.about[parameter]['name'] + " = " +
-                        str(self.about[parameter]['value']))
-            localLog.debug("All \"about\" parameters checked!")
-
-        localLog.debug("All \"about\" parameters retrieved successfully!")
-
-        return self.about
+    # def _getAbout(self):
+    #     '''
+    #     Get client about.
+    #     '''
+    #     localLog = logging.getLogger(self.logPath + "._getAbout")
+    #     localLog.debug("Refreshing about...")
+    #
+    #     # Ensure CLient Module has an account and settings
+    #     localLog.debug("Ensuring client has a reviewed account...")
+    #     if not self._accountReviewedOK:
+    #         localLog.debug("Client not reviewed...")
+    #         localLog.debug("Attempting to (re-)setup account for " + gcmName + "...")
+    #         self._setupAccount()
+    #     else:
+    #         localLog.debug("Client account OK!")
+    #
+    #     # Get new settings
+    #     localLog.debug("Attempting to retrieve new/updated \"about\"...")
+    #     oldAbout = self.about.copy()
+    #     try:
+    #         GregerDatabase.about = self.dbGCMRoot.child("about").get()
+    #         localLog.debug("\"About\" successfully retrieved!")
+    #     except Exception as e:
+    #         self.log.error("Oops! Failed to retrieve \"about\". - " + str(e))
+    #
+    #     # Checking about for updates...
+    #     localLog.debug("Checking \"about\" for updates...")
+    #     if oldAbout == self.about:
+    #         localLog.debug("No new \"about\" detected!")
+    #     else:
+    #         self.log.info("New/updated \"about\" detected!")
+    #         for parameter in sorted(self.about):
+    #             if parameter in oldAbout:
+    #                 if oldAbout[parameter] != self.about[parameter]:
+    #                     self.log.info("Changed: " +
+    #                         self.about[parameter]['name'] + " = " +
+    #                         str(self.about[parameter]['value']))
+    #             elif oldAbout == {}:
+    #                 self.log.info("About: " +
+    #                     self.about[parameter]['name'] + " = " +
+    #                     str(self.about[parameter]['value']))
+    #             else:
+    #                 self.log.info("New: " +
+    #                     self.about[parameter]['name'] + " = " +
+    #                     str(self.about[parameter]['value']))
+    #         localLog.debug("All \"about\" parameters checked!")
+    #
+    #     localLog.debug("All \"about\" parameters retrieved successfully!")
+    #
+    #     return self.about
 
     def update(self, path, value):
         '''
@@ -334,7 +334,7 @@ class GregerDatabase(Thread):
 
             # Get server updates...
             self._getSettings()
-            self._getAbout()
+            # self._getAbout()
 
             # Wait update delay
             localLog.debug("Waiting " + str(self.settings['gdbCheckUpdateDelay']['value']) + "s...")
