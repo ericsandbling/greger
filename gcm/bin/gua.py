@@ -294,7 +294,7 @@ class GregerUpdateAgent(Thread):
             softwareInfo = self.getSoftwareInfo()
 
             if int(localRevision) == int(softwareInfo['revision']):
-                self.log.info("Local and server revisions match!")
+                self.log.info("Local and server revisions (" + str(localRevision) + ") match!")
             else:
                 self.log.info("New revision found!")
 
@@ -311,7 +311,7 @@ class GregerUpdateAgent(Thread):
                 allThreads['GregerClientModule'].stopAll(GUA=True)
 
                 # Restart Application
-                localLog.debug("Attemption to restart application...")
+                self.log.info("Attemption to restart application...")
                 restart_program()
 
             if 'guaCheckUpdateDelay' in GregerDatabase.settings:
