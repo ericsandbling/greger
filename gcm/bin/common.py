@@ -29,6 +29,10 @@ def restart_program():
     localLog.info("Restarting application...")
 
     python = sys.executable
+    localLog.info("Path to restart: " + python)
+    for arg in sys.argv:
+        localLog.info("Arg: " + arg)
+
     os.execl(python, python, * sys.argv)
 
 #### Configuration Methods ####
