@@ -196,12 +196,12 @@ class GregerUpdateAgent(Thread):
             (output, err) = p.communicate()
 
             if err is not None:
-                localLog.debug("Error message: " + str(err))
+                self.log.warning("Error message: " + str(err))
             else:
-                localLog.debug("Download successful!")
+                self.log.info("Download successful!")
                 # Print output
                 for line in output.splitlines():
-                    localLog.debug("Line: " + line)
+                    self.log.info("Line: " + line)
 
         except Exception as e:
             self.log.error("Oops! Something went wrong - " + str(e))
@@ -270,13 +270,14 @@ class GregerUpdateAgent(Thread):
         localLog.debug("Wait for Greger Client Module to start...")
         self.ready.wait()
 
-        # List all active threads!
-        gcmThread = None
+        # Get all active threads!
+        allThreads = {}
         for thr in enumerate():
             localLog.debug(thr.name + " " + thr.__class__.__name__ +" active!")
+            allThreads.update({thr.__class__.__name__ : thr})
             if thr.__class__.__name__ == "GregerClientModule":
-                gcmThread = thr
-                localLog.debug("Greger Client Module thread found! " + gcmThread.name)
+                localLog.debug("Greger Client Module thread found! " +
+                    allThreads['GregerClientModule'].name)
 
         # Start checking for updates
         loopCount = 0
@@ -290,19 +291,24 @@ class GregerUpdateAgent(Thread):
 
             # Get server revision...
             localLog.debug("Getting latest software info...")
-            latestRevisionInfo = self.getSoftwareInfo()
+            softwareInfo = self.getSoftwareInfo()
 
-            if int(localRevision) == int(latestRevisionInfo['revision']):
+            if int(localRevision) == int(softwareInfo['revision']):
                 self.log.info("Local and server revisions match!")
             else:
                 self.log.info("New revision found!")
 
+                # Do update!!
+                localLog.debug("Attempting to update software...")
+                self.updateSoftware()
+
+                # Update server with updated software
+                localLog.debug("Attempting to update server with software info...")
+                allThreads['GregerDatabase'].update('about', softwareInfo)
+
                 # Tell GCM to stop all treads (except GUA)...
                 self.log.warning("Attempting to stop all exection!")
-                gcmThread.stopAll(GUA=True)
-
-                # Do update!!
-                self.updateSoftware()
+                allThreads['GregerClientModule'].stopAll(GUA=True)
 
                 # Restart Application
                 localLog.debug("Attemption to restart application...")
