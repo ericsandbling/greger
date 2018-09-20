@@ -71,6 +71,9 @@ def createLogger():
     '''
     Create common root logger.
     '''
+
+    enableConsolLogger = False
+
     # Get Local Configuration Parameters
     config = getLocalConfig()
 
@@ -89,33 +92,29 @@ def createLogger():
     # logger.setLevel(logging.INFO)
 
     # Create logging handlers
-    consoleHandler = logging.StreamHandler()
-    # fileHandler = logging.FileHandler(logFile, mode='w')
     rotatingFileHandler = RotatingFileHandler(
-        logPath + sysLog,
-        mode='a',
-        maxBytes=int(logMaxBytes),
-        backupCount=int(logBackupCount),
-        encoding=None,
-        delay=0)
-
-    # Set default logging level
-    # consoleHandler.setLevel(logging.DEBUG)
-    # consoleHandler.setLevel(logging.INFO)
+    logPath + sysLog,
+    mode='a',
+    maxBytes=int(logMaxBytes),
+    backupCount=int(logBackupCount),
+    encoding=None,
+    delay=0)
+    if enableConsolLogger:
+        consoleHandler = logging.StreamHandler()
 
     # Create formatter
     fmt = '%(asctime)s %(name)s [%(levelname)s] : %(message)s'
     formatter = logging.Formatter(fmt, datefmt='%Y-%m-%d %H:%M:%S')
 
     # Add formatter to logging handlers
-    consoleHandler.setFormatter(formatter)
-    # fileHandler.setFormatter(formatter)
     rotatingFileHandler.setFormatter(formatter)
+    if enableConsolLogger:
+        consoleHandler.setFormatter(formatter)
 
     # Add handlers to logger
-    logger.addHandler(consoleHandler)
-    # logger.addHandler(fileHandler)
     logger.addHandler(rotatingFileHandler)
+    if enableConsolLogger:
+        logger.addHandler(consoleHandler)
 
     logger.debug("Logger created successfully!")
 
