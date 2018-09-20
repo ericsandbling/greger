@@ -93,8 +93,8 @@ class GregerClientModule(Thread):
             '-rt','--runTime',
             type=int,
             # dest='runTime',
-            default=15,
-            help='Run-time of the application in seconds. 0 = Infinite runtime.')
+            default=0,
+            help='Run-time of the application in seconds. 0 = Infinite runtime (default).')
 
         # Get arguments from parser
         # parser.set_defaults(printOn=True)
