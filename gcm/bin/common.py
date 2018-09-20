@@ -97,7 +97,7 @@ def createLogger():
 
     # Create logging handlers
     rotatingFileHandler = RotatingFileHandler(
-    logPath + sysLog,
+    os.path.join(logPath, sysLog),
     mode='a+',
     maxBytes=int(logMaxBytes),
     backupCount=int(logBackupCount),
