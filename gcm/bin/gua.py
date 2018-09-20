@@ -201,7 +201,7 @@ class GregerUpdateAgent(Thread):
                 self.log.info("Download successful!")
                 # Print output
                 for line in output.splitlines():
-                    self.log.info("Line: " + line)
+                    self.log.info(line)
 
         except Exception as e:
             self.log.error("Oops! Something went wrong - " + str(e))
@@ -307,7 +307,7 @@ class GregerUpdateAgent(Thread):
                 allThreads['GregerDatabase'].update('about', softwareInfo)
 
                 # Tell GCM to stop all treads (except GUA)...
-                self.log.warning("Attempting to stop all exection!")
+                self.log.info("Attempting to stop all exection before restarting...")
                 allThreads['GregerClientModule'].stopAll(GUA=True)
 
                 # Restart Application
