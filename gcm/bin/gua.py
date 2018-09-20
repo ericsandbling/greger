@@ -292,9 +292,10 @@ class GregerUpdateAgent(Thread):
             # Get server revision...
             localLog.debug("Getting latest software info...")
             softwareInfo = self.getSoftwareInfo()
+            self.log.info("Revision check done! (" + str(localRevision) + ")")
 
             if int(localRevision) == int(softwareInfo['revision']):
-                self.log.info("Local and server revisions (" + str(localRevision) + ") match!")
+                self.log.info("No new revision found!")
             else:
                 self.log.info("New revision found!")
 
