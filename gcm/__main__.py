@@ -10,6 +10,7 @@ __license__ = 'MIT'
 __status__ = 'Development'
 
 import os, sys
+import getpass
 import logging
 
 # Custom libraries
@@ -18,8 +19,11 @@ import bin.common as lib
 
 if __name__ == '__main__':
 
+    username = getpass.getuser()
+
     logger = lib.createLogger()
     logger.info("Starting application....")
+    logger.info("Application started by: " + username)
     try:
         GCM = GregerClientModule()
         GCM.start()
