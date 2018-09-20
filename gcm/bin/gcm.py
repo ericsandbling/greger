@@ -203,12 +203,11 @@ class GregerClientModule(Thread):
             localLog.debug(thr.name + " " + thr.__class__.__name__ +" active!")
 
         # Main loop
-        while self.GregerDatabase.settings['gcmEnableOWD']['value'] and not self.stopExecution.is_set():
+        while not self.stopExecution.is_set():
             # Check if execution is paused
             if not self.GregerDatabase.settings['gcmEnableOWD']['value']:
-                localLog.debug(self.GregerDatabase.settings['gcmEnableOWD']['name'] + " = False")
-                localLog.debug("Pausing 5s...")
-                time.sleep(5)
+                localLog.debug(self.GregerDatabase.settings['gcmEnableOWD']['name'] + " = False (pausing 1s...)")
+                time.sleep(1)
                 continue
 
             # Read ow devices
