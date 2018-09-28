@@ -306,7 +306,7 @@ class GregerUpdateAgent(Thread):
             self.log.info("Revision check done! (" + str(localRevision) + ")")
 
             if int(localRevision) == int(softwareInfo['revision']):
-                self.log.info("No new revision found!")
+                self.log.info("No new revision found.")
             else:
                 self.log.info("New revision found!")
 
