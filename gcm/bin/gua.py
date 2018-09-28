@@ -49,6 +49,15 @@ class GregerUpdateAgent(Thread):
         self._location = self._location[:-15] # Trim gcm/__main__.py from path to get at location of application
         localLog.debug("Local path: " + self._location)
 
+        # Get Local Configuration Parameters
+        localLog.debug("Getting configuration parameters from file...")
+        config = getLocalConfig()
+
+        # Locally relevant parameters
+        self.localRevisionRecordPath = config.get("greger_update_agent", "local_revision_path")
+        localLog.debug("Parameter: (localRevisionRecordPath) " + self.localRevisionRecordPath)
+
+
         self.log.info("Greger Update Agent (GUA) successfully initiated!")
 
     @property
@@ -58,10 +67,11 @@ class GregerUpdateAgent(Thread):
         '''
         # Logging
         localLog = logging.getLogger(self.logPath + ".localRevisionRecord")
-        localLog.debug("Getting local revision record (.gcm)...")
+        localLog.debug("Getting local revision record...")
 
         # Local parameters
-        revisionRecordPath = os.path.join(self._location, ".gcm")
+        # revisionRecordPath = os.path.join(self._location, ".gcm")
+        revisionRecordPath = self.localRevisionRecordPath
 
         localLog.debug("Attemption to get record from file...")
         try:
