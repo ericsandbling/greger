@@ -182,10 +182,12 @@ class GregerUpdateAgent(Thread):
         localLog.debug("Getting software revision " + str(swRev) + " from server and updating local client...")
 
         # Locally relevant parameters
-        localLog.debug("Retrieving relevant parameters from server...")
+        localLog.debug("Constructing target path for new software...")
         targetRoot = self._location
         targetDir  = "gcm"
         targetPath = os.path.join(targetRoot, targetDir)
+        localLog.debug("Target path: " + targetPath)
+        localLog.debug("Retrieving relevant parameters from server...")
         if 'guaSWSource' in GregerDatabase.settings:
             guaSWServerURI = GregerDatabase.settings['guaSWSource']['value']
             localLog.debug("Parameter: (guaSWSource) " + guaSWServerURI)
@@ -240,11 +242,15 @@ class GregerUpdateAgent(Thread):
         # r=root, d=directories, f = files
         for r, d, f in os.walk(targetPath):
             for file in f:
-                allFiles.append(os.path.join(r, file))
-                self.log.debug("File: " + os.path.join(r, file))
+                allFiles.append(file)
+                # allFiles.append(os.path.join(r, file))
+                localLog.debug("File: " + file)
+                # localLog.debug("File: " + os.path.join(r, file))
             for dir in d:
-                allFiles.append(os.path.join(r, dir))
-                self.log.debug("Dir:  " + os.path.join(r, file))
+                allFiles.append(dir)
+                # allFiles.append(os.path.join(r, dir))
+                localLog.debug("Dir:  " + dir)
+                # localLog.debug("Dir:  " + os.path.join(r, dir))
 
         self.log.info("Identifying old files to remove (<new_files> - <all_files>)...")
         diffFiles = list(set(allFiles) - set(downloadedFiles))
