@@ -11,6 +11,7 @@ __status__ = 'Development'
 
 # System modules
 import os, sys
+import shutil
 import logging
 import subprocess
 from threading import Event
