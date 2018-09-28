@@ -9,7 +9,7 @@ __author__ = "Eric Sandbling"
 __license__ = 'MIT'
 __status__ = 'Development'
 
-import os, sys
+import os, sys, time
 import getpass
 import logging
 
@@ -20,6 +20,7 @@ import bin.common as lib
 if __name__ == '__main__':
 
     username = getpass.getuser()
+    print time.strftime("%Y-%m-%d %H:%M:%S"),
     print "Greger Client Module Application started by: " + username
 
     logger = lib.createLogger()
