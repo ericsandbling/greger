@@ -95,7 +95,8 @@ class GregerUpdateAgent(Thread):
         localLog.debug("Setting local revision record (.gcm) to " + str(newRevision) + "...")
 
         # Local parameters
-        revisionRecordPath = os.path.join(self._location, ".gcm")
+        # revisionRecordPath = os.path.join(self._location, ".gcm")
+        revisionRecordPath = self.localRevisionRecordPath
 
         localLog.debug("Attemption to write \"" + str(newRevision) + "\" to file...")
         with open(revisionRecordPath,"w") as f:

@@ -20,8 +20,8 @@ import bin.common as lib
 if __name__ == '__main__':
 
     username = getpass.getuser()
-    print "Application started by: " + username
-    
+    print "Greger Client Module Application started by: " + username
+
     logger = lib.createLogger()
     logger.info("Starting application....")
     logger.info("Application started by: " + username)
