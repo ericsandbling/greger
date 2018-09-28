@@ -242,14 +242,14 @@ class GregerUpdateAgent(Thread):
         # r=root, d=directories, f = files
         for r, d, f in os.walk(targetPath):
             for file in f:
-                allFiles.append(file)
-                # allFiles.append(os.path.join(r, file))
-                localLog.debug("File: " + file)
+                # allFiles.append(os.path.abspath(file))
+                allFiles.append(os.path.join(r, file))
+                localLog.debug("File: " + allFiles[-1])
                 # localLog.debug("File: " + os.path.join(r, file))
             for dir in d:
-                allFiles.append(dir)
-                # allFiles.append(os.path.join(r, dir))
-                localLog.debug("Dir:  " + dir)
+                # allFiles.append(os.path.abspath(dir))
+                allFiles.append(os.path.join(r, dir))
+                localLog.debug("Dir:  " + allFiles[-1])
                 # localLog.debug("Dir:  " + os.path.join(r, dir))
 
         self.log.info("Identifying old files to remove (<new_files> - <all_files>)...")
