@@ -156,7 +156,7 @@ This time you need to write a few lines of text for this file. For this file, yo
 
 .wpa_supplicant.conf
 ----
-country="«your_ISO-3166-1_two-letter_country_code»"
+country=«your_ISO-3166-1_two-letter_country_code»
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 update_config=1
 
