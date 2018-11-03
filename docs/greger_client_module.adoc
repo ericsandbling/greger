@@ -11,7 +11,7 @@ This article describes the hardware and software of the *Greger Client Module (G
 The hardware of the sensor hub is made up of a https://www.raspberrypi.org/[Raspberry Pi (RPi)] with a _RPi i2c 1-Wire Expansion Module_
 
 .RPi i2c 1-Wire Expansion Module v1.1, provided by https://www.m.nu/[m.nu]
-image::https://images.m.nu/data/product/1076f860/R-Pi-i2c-1wire-module.jpg[R-pi i2c 1wire expansion module v1.1]
+image::https://images.m.nu/data/product/1076f860/R-Pi-i2c-1wire-module.jpg[R-pi i2c 1wire expansion module v1.1, 200, 200]
 
 === 1-Wire Wiring
 
