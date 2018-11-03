@@ -35,7 +35,7 @@ These wiring and contacting instructions applies to products provided by https:/
 |GND (Power Return)  {set:cellbgcolor:auto}
 
 |2                   {set:cellbgcolor:auto}
-|                    {set:cellbgcolor:black}
+|image::https://image.architonic.com/img_pro1-6/118/7482/fw-618-sq.jpg[Black,10,10]                    {set:cellbgcolor:black}
 |Black               {set:cellbgcolor:auto}
 |                    {set:cellbgcolor:#ffd78e}
 |Orange/White        {set:cellbgcolor:auto}
