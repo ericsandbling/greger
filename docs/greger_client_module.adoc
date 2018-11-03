@@ -20,7 +20,7 @@ image::https://images.m.nu/data/product/1076f860/R-Pi-i2c-1wire-module.jpg[R-pi 
 These wiring and contacting instructions applies to products provided by https://www.m.nu/[m.nu], except W-SERVER-ENET/WIFI and HA7Net, both from Embedded Data Systems.
 
 .1-Wire Wiring Mapping
-[cols="1,1,2,1,2,4,1,2,4"]
+[cols="1,1a,2,1a,2,4,1a,2,4"]
 |===
 |Pin 2+|DWS 3+|1-Wire (RJ12) 3+|1-Wire (RJ45)
 
@@ -35,7 +35,7 @@ These wiring and contacting instructions applies to products provided by https:/
 |GND (Power Return)  {set:cellbgcolor:auto}
 
 |2                   {set:cellbgcolor:auto}
-|                    {set:cellbgcolor:black}
+|image::https://image.architonic.com/img_pro1-6/118/7482/fw-618-sq.jpg[Black, 10, 10]                    {set:cellbgcolor:black}
 |Black               {set:cellbgcolor:auto}
 |                    {set:cellbgcolor:#ffd78e}
 |Orange/White        {set:cellbgcolor:auto}
