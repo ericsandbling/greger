@@ -1,0 +1,9 @@
+# Greger Client Module
+gcm_dev/
+
+# Greger Database (gdb prev. firebase)
+gdb/certs/
+gdb/dev/
+
+# UI development crap...
+uis/http/
